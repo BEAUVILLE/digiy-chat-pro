@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>DIGIY PRO CHAT — Demandes Clients</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="DIGIY PRO CHAT — Interface partenaire pour suivre les demandes clients et finaliser sur WhatsApp.">
+  <meta name="theme-color" content="#020617">
+
+  <style>
+    :root{
+      --bg:#020617;
+      --bg-soft:#030712;
+      --card:#020617;
+      --accent:#facc15;
+      --accent-soft:#f97316;
+      --green:#22c55e;
+      --ink:#f9fafb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --danger:#ef4444;
+      --shadow-soft:0 22px 50px rgba(0,0,0,0.9);
+      --radius-xl:22px;
+      --radius-lg:16px;
+      --radius-md:12px;
+    }
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,system-ui,"SF Pro Text","Segoe UI",sans-serif;
+    }
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top,rgba(250,204,21,0.16),transparent 60%),
+        radial-gradient(circle at bottom,rgba(56,189,248,0.15),transparent 55%),
+        #020617;
+      color:var(--ink);
+      display:flex;
+      justify-content:center;
+      padding:10px;
+    }
+    .app{
+      width:100%;
+      max-width:980px;
+      min-height:80vh;
+      background:linear-gradient(135deg,#020617 0%,#020819 50%,#020617 100%);
+      border-radius:24px;
+      border:1px solid rgba(148,163,184,0.35);
+      box-shadow:var(--shadow-soft);
+      padding:12px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      overflow:hidden;
+    }
+    .app::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        radial-gradient(circle at 0% 0%,rgba(250,204,21,0.12),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(34,197,94,0.10),transparent 45%);
+      opacity:0.85;
+      pointer-events:none;
+    }
+
+    header{
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand-logo{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:900;
+      box-shadow:0 12px 30px rgba(234,179,8,0.6);
+    }
+    .brand-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      color:var(--accent);
+    }
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .header-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+      font-size:11px;
+    }
+    .back-link{
+      font-size:11px;
+    }
+    .back-link a{
+      color:var(--muted);
+      text-decoration:none;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      padding:4px 10px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(15,23,42,0.9);
+    }
+    .back-link a:hover{
+      border-color:var(--accent);
+      color:var(--accent);
+    }
+    .status-pill{
+      padding:3px 9px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      background:rgba(15,23,42,0.9);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+    }
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--green);
+      box-shadow:0 0 10px rgba(34,197,94,0.9);
+    }
+
+    main{
+      position:relative;
+      z-index:2;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .layout{
+      flex:1;
+      display:flex;
+      gap:10px;
+      margin-top:4px;
+      min-height:0;
+    }
+
+    /* ==== COLONNE GAUCHE : LISTE DES DEMANDES ==== */
+    .left-panel{
+      width:280px;
+      min-width:240px;
+      max-width:320px;
+      background:radial-gradient(circle at top left,rgba(15,23,42,0.95),#020617);
+      border-radius:var(--radius-xl);
+      border:1px solid rgba(30,64,175,0.7);
+      box-shadow:0 16px 40px rgba(15,23,42,0.95);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .left-header{
+      padding:9px 11px 6px;
+      border-bottom:1px solid rgba(31,41,55,0.9);
+    }
+    .left-title{
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:0.09em;
+      color:#e5e7eb;
+    }
+    .left-sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .filter-row{
+      margin-top:6px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:10px;
+      color:var(--muted);
+    }
+    .filter-label{
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+    }
+    .filter-select{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.95);
+      color:var(--ink);
+      padding:4px 8px;
+      font-size:11px;
+    }
+
+    .requests-list{
+      flex:1;
+      overflow-y:auto;
+      padding:6px 4px 6px;
+    }
+    .requests-list::-webkit-scrollbar{
+      width:4px;
+    }
+    .requests-list::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.7);
+      border-radius:999px;
+    }
+
+    .request-item{
+      display:flex;
+      padding:7px 7px;
+      gap:7px;
+      border-radius:var(--radius-md);
+      cursor:pointer;
+      margin:2px 4px;
+      transition:background 0.2s,border-color 0.2s;
+      border:1px solid transparent;
+    }
+    .request-item:hover{
+      background:rgba(15,23,42,0.95);
+      border-color:rgba(148,163,184,0.5);
+    }
+    .request-item.active{
+      background:rgba(250,204,21,0.04);
+      border-color:var(--accent);
+    }
+
+    .avatar{
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      font-weight:800;
+      flex-shrink:0;
+    }
+    .request-main{
+      flex:1;
+      min-width:0;
+    }
+    .request-name{
+      font-size:12px;
+      font-weight:700;
+      color:#e5e7eb;
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .request-time{
+      font-size:10px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .request-preview{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+    .request-badge{
+      font-size:10px;
+      margin-top:3px;
+      display:inline-flex;
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      color:var(--muted);
+      gap:4px;
+      align-items:center;
+    }
+    .badge-dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--accent-soft);
+    }
+
+    /* ==== COLONNE DROITE : CONVERSATION ==== */
+    .right-panel{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      background:radial-gradient(circle at top right,rgba(15,23,42,0.95),#020617);
+      border-radius:var(--radius-xl);
+      border:1px solid rgba(30,64,175,0.7);
+      box-shadow:0 16px 40px rgba(15,23,42,0.95);
+      overflow:hidden;
+      min-width:0;
+    }
+    .right-header{
+      padding:9px 12px 6px;
+      border-bottom:1px solid rgba(31,41,55,0.9);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .conv-main-title{
+      font-size:13px;
+      font-weight:700;
+    }
+    .conv-main-sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .conv-tags{
+      margin-top:4px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+    }
+    .tag{
+      font-size:10px;
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      color:var(--muted);
+    }
+    .right-actions{
+      font-size:11px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+      min-width:150px;
+    }
+    .last-activity{
+      color:var(--muted);
+    }
+    .action-buttons{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      border:none;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:11px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      white-space:nowrap;
+      transition:all 0.2s;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#020617;
+      font-weight:700;
+      box-shadow:0 8px 20px rgba(22,163,74,0.5);
+    }
+    .btn-primary:hover{
+      transform:translateY(-1px);
+      box-shadow:0 12px 26px rgba(22,163,74,0.7);
+    }
+    .btn-ghost{
+      background:rgba(15,23,42,0.9);
+      color:#e5e7eb;
+      border:1px solid rgba(148,163,184,0.6);
+      font-weight:600;
+    }
+    .btn-ghost:hover{
+      border-color:var(--accent);
+      color:var(--accent);
+    }
+
+    .conv-body{
+      flex:1;
+      padding:10px 11px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow:hidden;
+    }
+    .conv-messages{
+      flex:1;
+      background:rgba(15,23,42,0.95);
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(31,41,55,0.9);
+      padding:8px 9px;
+      overflow-y:auto;
+    }
+    .conv-messages::-webkit-scrollbar{
+      width:4px;
+    }
+    .conv-messages::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.7);
+      border-radius:999px;
+    }
+
+    .msg-row{
+      display:flex;
+      margin-bottom:6px;
+    }
+    .msg-row.client{
+      justify-content:flex-start;
+    }
+    .msg-row.pro{
+      justify-content:flex-end;
+    }
+    .msg-bubble{
+      max-width:80%;
+      font-size:12px;
+      padding:7px 9px;
+      border-radius:14px;
+      position:relative;
+    }
+    .bubble-client{
+      background:#020617;
+      border:1px solid rgba(148,163,184,0.7);
+      color:#f9fafb;
+      border-bottom-left-radius:4px;
+    }
+    .bubble-pro{
+      background:linear-gradient(135deg,#facc15,#f97316);
+      color:#111827;
+      border-bottom-right-radius:4px;
+    }
+    .msg-meta{
+      font-size:10px;
+      margin-top:3px;
+      opacity:0.8;
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .msg-name{
+      font-weight:700;
+    }
+    .conv-note{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+    .conv-note strong{
+      color:var(--accent);
+    }
+
+    footer{
+      position:relative;
+      z-index:2;
+      margin-top:8px;
+      font-size:10px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    footer span{
+      color:var(--accent);
+      font-weight:700;
+    }
+
+    @media(max-width:820px){
+      .layout{
+        flex-direction:column;
+      }
+      .left-panel{
+        width:100%;
+        max-width:none;
+        order:2;
+      }
+      .right-panel{
+        order:1;
+      }
+    }
+    @media(max-width:768px){
+      .app{
+        border-radius:0;
+        border:none;
+        box-shadow:none;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-logo">💼</div>
+      <div>
+        <div class="brand-title">DIGIY PRO CHAT</div>
+        <div class="brand-sub">Suivi des demandes clients • Chauffeurs & Pros</div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="back-link">
+        <!-- adapte l’URL vers ton dashboard / driver pro si besoin -->
+        <a href="https://digiylyfe.com/" target="_blank" rel="noopener">
+          ← Retour Dashboard
+        </a>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        Vue démo — données exemples
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <!-- COLONNE GAUCHE : LISTE DEMANDES -->
+      <aside class="left-panel">
+        <div class="left-header">
+          <div class="left-title">Demandes Clients</div>
+          <div class="left-sub">Vue rapide des conversations récentes.</div>
+          <div class="filter-row">
+            <span class="filter-label">Statut</span>
+            <select id="statusFilter" class="filter-select">
+              <option value="all">Toutes</option>
+              <option value="new">Nouveaux</option>
+              <option value="ongoing">En cours</option>
+              <option value="done">Terminées</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="requestsList" class="requests-list">
+          <!-- rempli en JS -->
+        </div>
+      </aside>
+
+      <!-- COLONNE DROITE : CONVERSATION -->
+      <section class="right-panel">
+        <div class="right-header">
+          <div>
+            <div class="conv-main-title" id="convTitle">
+              Sélectionnez une demande dans la colonne de gauche
+            </div>
+            <div class="conv-main-sub" id="convSub">
+              Détails de la conversation, actions WhatsApp & appel s’afficheront ici.
+            </div>
+            <div class="conv-tags" id="convTags">
+              <span class="tag">Aucun client sélectionné</span>
+            </div>
+          </div>
+          <div class="right-actions">
+            <div class="last-activity" id="lastActivity">
+              Dernière activité : —
+            </div>
+            <div class="action-buttons">
+              <button type="button" class="btn btn-primary" id="waBtn" disabled>
+                ✆ WhatsApp
+              </button>
+              <button type="button" class="btn btn-ghost" id="callBtn" disabled>
+                📞 Appeler
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="conv-body">
+          <div id="convMessages" class="conv-messages">
+            <!-- messages dynamiques -->
+          </div>
+          <div class="conv-note" id="convNote">
+            Finalisez la demande sur <strong>WhatsApp</strong> pour garantir rapidité & sécurité.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div>DIGIYLYFE • <span>DIGIY PRO CHAT</span> — Interface partenaire.</div>
+    <div>Version démo (statique). À brancher ensuite sur Firebase / DIGIY DRIVER.</div>
+  </footer>
+</div>
+
+<script>
+  // ==== Données démo (tu pourras remplacer ça par du Firebase plus tard) ====
+  const REQUESTS = [
+    {
+      id: "fama1",
+      initials: "F",
+      name: "Fama K. (Nouveau Client)",
+      preview: "Je veux réserver demain…",
+      timeLabel: "10:30",
+      status: "new",
+      lastActivity: "Dernière activité : 10:30",
+      phone: "+221 77 000 00 01",
+      waUrl: "https://wa.me/221770000001?text=Salam%20Fama%2C%20DIGIY%20vous%20répond%20pour%20votre%20demande.",
+      messages: [
+        {
+          from: "client",
+          name: "Fama K.",
+          text: "Bonjour Lamine, c'est pour un transfert AIBD vers Saly demain 14h.",
+          time: "10:30"
+        },
+        {
+          from: "pro",
+          name: "Lamine",
+          text: "Salam Fama ! Oui disponible. Combien de personnes + bagages ?",
+          time: "10:33"
+        }
+      ]
+    },
+    {
+      id: "modou1",
+      initials: "M",
+      name: "Modou F. (AIBD → Saly)",
+      preview: "OK pour 14h demain ✔",
+      timeLabel: "Hier",
+      status: "ongoing",
+      lastActivity: "Dernière activité : Hier",
+      phone: "+221 77 000 00 02",
+      waUrl: "https://wa.me/221770000002?text=Salam%20Modou%2C%20votre%20transfert%20AIBD%20%3E%20Saly%20est%20bien%20enregistr%C3%A9.",
+      messages: [
+        {
+          from: "client",
+          name: "Modou F.",
+          text: "Salam, tu peux me prendre demain à l'AIBD pour Saly vers 14h ?",
+          time: "Hier 09:15"
+        },
+        {
+          from: "pro",
+          name: "Lamine",
+          text: "Oui Modou, c’est bon pour 14h. Merci de m’envoyer le numéro de vol.",
+          time: "Hier 09:18"
+        },
+        {
+          from: "client",
+          name: "Modou F.",
+          text: "Parfait, merci beaucoup 🙏",
+          time: "Hier 09:20"
+        }
+      ]
+    },
+    {
+      id: "aisha1",
+      initials: "A",
+      name: "Aïsha N.",
+      preview: "Parfait c’est booké !",
+      timeLabel: "24/11",
+      status: "done",
+      lastActivity: "Dernière activité : 24/11",
+      phone: "+221 77 000 00 03",
+      waUrl: "https://wa.me/221770000003?text=Salam%20Aisha%2C%20merci%20pour%20votre%20confiance%20avec%20DIGIY.",
+      messages: [
+        {
+          from: "client",
+          name: "Aïsha N.",
+          text: "Bonjour, je veux réserver Saly → AIBD pour lundi 6h du matin.",
+          time: "24/11 10:02"
+        },
+        {
+          from: "pro",
+          name: "Lamine",
+          text: "C’est noté Aïsha, départ 6h, on passe vous prendre 15 min avant.",
+          time: "24/11 10:05"
+        },
+        {
+          from: "client",
+          name: "Aïsha N.",
+          text: "Parfait c’est booké !",
+          time: "24/11 10:06"
+        }
+      ]
+    }
+  ];
+
+  const requestsListEl = document.getElementById("requestsList");
+  const statusFilterEl = document.getElementById("statusFilter");
+
+  const convTitleEl = document.getElementById("convTitle");
+  const convSubEl = document.getElementById("convSub");
+  const convTagsEl = document.getElementById("convTags");
+  const lastActivityEl = document.getElementById("lastActivity");
+  const convMessagesEl = document.getElementById("convMessages");
+  const convNoteEl = document.getElementById("convNote");
+  const waBtn = document.getElementById("waBtn");
+  const callBtn = document.getElementById("callBtn");
+
+  let currentRequestId = null;
+
+  function renderRequests(){
+    const statusFilter = statusFilterEl.value || "all";
+    requestsListEl.innerHTML = "";
+
+    REQUESTS.forEach(req => {
+      if(statusFilter !== "all" && req.status !== statusFilter) return;
+
+      const div = document.createElement("div");
+      div.className = "request-item" + (req.id === currentRequestId ? " active" : "");
+      div.dataset.id = req.id;
+
+      div.innerHTML = `
+        <div class="avatar">${req.initials}</div>
+        <div class="request-main">
+          <div class="request-name">
+            <span>${req.name}</span>
+            <span class="request-time">${req.timeLabel}</span>
+          </div>
+          <div class="request-preview">${req.preview}</div>
+          <div class="request-badge">
+            <span class="badge-dot"></span>
+            ${req.status === "new" ? "Nouveau" : req.status === "ongoing" ? "En cours" : "Terminé"}
+          </div>
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+        selectRequest(req.id);
+      });
+
+      requestsListEl.appendChild(div);
+    });
+
+    if(!requestsListEl.children.length){
+      const empty = document.createElement("div");
+      empty.style.padding = "8px 10px";
+      empty.style.fontSize = "11px";
+      empty.style.color = "var(--muted)";
+      empty.textContent = "Aucune demande pour ce filtre.";
+      requestsListEl.appendChild(empty);
+    }
+  }
+
+  function selectRequest(id){
+    const req = REQUESTS.find(r => r.id === id);
+    if(!req) return;
+    currentRequestId = id;
+
+    document.querySelectorAll(".request-item").forEach(item => {
+      item.classList.toggle("active", item.dataset.id === id);
+    });
+
+    convTitleEl.textContent = req.name;
+    convSubEl.textContent = req.preview;
+    lastActivityEl.textContent = req.lastActivity;
+
+    convTagsEl.innerHTML = "";
+    const tag1 = document.createElement("span");
+    tag1.className = "tag";
+    tag1.textContent = "Client VTC";
+    convTagsEl.appendChild(tag1);
+
+    const tag2 = document.createElement("span");
+    tag2.className = "tag";
+    tag2.textContent = req.status === "new" ? "Nouveau" : req.status === "ongoing" ? "En cours" : "Terminé";
+    convTagsEl.appendChild(tag2);
+
+    convMessagesEl.innerHTML = "";
+    req.messages.forEach(m => {
+      const row = document.createElement("div");
+      row.className = "msg-row " + (m.from === "pro" ? "pro" : "client");
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg-bubble " + (m.from === "pro" ? "bubble-pro" : "bubble-client");
+
+      const text = document.createElement("div");
+      text.textContent = m.text;
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "msg-name";
+      nameSpan.textContent = m.name;
+      const timeSpan = document.createElement("span");
+      timeSpan.textContent = m.time || "";
+      meta.appendChild(nameSpan);
+      meta.appendChild(timeSpan);
+
+      bubble.appendChild(text);
+      bubble.appendChild(meta);
+      row.appendChild(bubble);
+      convMessagesEl.appendChild(row);
+    });
+
+    convMessagesEl.scrollTop = convMessagesEl.scrollHeight || 999999;
+
+    convNoteEl.innerHTML = 'Finalisez cette demande sur <strong>WhatsApp</strong> pour garantir rapidité & sécurité.';
+
+    waBtn.disabled = false;
+    callBtn.disabled = false;
+
+    waBtn.onclick = () => {
+      if(req.waUrl){
+        window.open(req.waUrl, "_blank", "noopener");
+      }else if(req.phone){
+        window.open("https://wa.me/" + req.phone.replace(/\D/g,""), "_blank", "noopener");
+      }
+    };
+
+    callBtn.onclick = () => {
+      if(req.phone){
+        window.location.href = "tel:" + req.phone;
+      }
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderRequests();
+    statusFilterEl.addEventListener("change", () => {
+      renderRequests();
+    });
+
+    // Par défaut on sélectionne Fama
+    if(REQUESTS[0]){
+      selectRequest(REQUESTS[0].id);
+    }
+  });
+</script>
+</body>
+</html>
