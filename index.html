@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>DIGIY CHAT — Temps réel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="DIGIY CHAT — Messagerie temps réel pour l'écosystème DIGIYLYFE.">
+  <meta name="theme-color" content="#020617">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root{
+      --bg:#020617;
+      --bg-soft:#030712;
+      --card:#020617;
+      --accent:#facc15;
+      --accent-soft:#f97316;
+      --accent-green:#22c55e;
+      --ink:#f9fafb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --danger:#ef4444;
+      --radius-xl:22px;
+      --radius-lg:16px;
+      --radius-md:12px;
+      --shadow-soft:0 22px 50px rgba(0,0,0,0.9);
+    }
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,system-ui,"SF Pro Text","Segoe UI",sans-serif;
+    }
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top,rgba(250,204,21,0.16),transparent 60%),
+        radial-gradient(circle at bottom,rgba(56,189,248,0.15),transparent 55%),
+        #020617;
+      color:var(--ink);
+      display:flex;
+      justify-content:center;
+      padding:10px;
+    }
+    .app{
+      width:100%;
+      max-width:900px;
+      min-height:80vh;
+      background:linear-gradient(135deg,#020617 0%,#020819 50%,#020617 100%);
+      border-radius:24px;
+      border:1px solid rgba(148,163,184,0.35);
+      box-shadow:var(--shadow-soft);
+      padding:12px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      overflow:hidden;
+    }
+    .app::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        radial-gradient(circle at 0% 0%,rgba(250,204,21,0.12),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(34,197,94,0.10),transparent 45%);
+      opacity:0.85;
+      pointer-events:none;
+    }
+
+    header{
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand-logo{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:900;
+      box-shadow:0 12px 30px rgba(234,179,8,0.6);
+    }
+    .brand-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      color:var(--accent);
+    }
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .status-box{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:4px;
+      font-size:11px;
+    }
+    .status-pill{
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+    }
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent-green);
+      box-shadow:0 0 12px rgba(34,197,94,0.9);
+    }
+    .room-label{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .room-name{
+      color:var(--accent-soft);
+      font-weight:700;
+    }
+
+    main{
+      position:relative;
+      z-index:2;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:4px;
+    }
+
+    .chat-card{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      background:radial-gradient(circle at top left,rgba(15,23,42,0.95),#020617);
+      border-radius:var(--radius-xl);
+      border:1px solid rgba(30,64,175,0.6);
+      box-shadow:0 18px 44px rgba(15,23,42,0.95);
+      overflow:hidden;
+    }
+
+    .chat-header{
+      padding:10px 14px 8px;
+      border-bottom:1px solid rgba(31,41,55,0.9);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chat-title{
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:0.09em;
+      color:#e5e7eb;
+    }
+    .chat-sub{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .user-mini{
+      font-size:11px;
+      color:#e5e7eb;
+      text-align:right;
+    }
+
+    .chat-body{
+      flex:1;
+      display:flex;
+      padding:8px 10px;
+      gap:8px;
+      overflow:hidden;
+    }
+    .messages-panel{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      background:rgba(15,23,42,0.85);
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(31,41,55,0.9);
+      overflow:hidden;
+    }
+    .messages-list{
+      flex:1;
+      padding:10px;
+      overflow-y:auto;
+      scroll-behavior:smooth;
+    }
+    .messages-list::-webkit-scrollbar{
+      width:4px;
+    }
+    .messages-list::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.7);
+      border-radius:999px;
+    }
+
+    .msg-row{
+      display:flex;
+      margin-bottom:6px;
+      max-width:100%;
+    }
+    .msg-row.me{
+      justify-content:flex-end;
+    }
+    .msg-bubble{
+      max-width:80%;
+      padding:7px 10px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.4;
+      position:relative;
+    }
+    .msg-me{
+      background:linear-gradient(135deg,#facc15,#f97316);
+      color:#111827;
+      border-bottom-right-radius:4px;
+    }
+    .msg-other{
+      background:#020617;
+      border:1px solid rgba(148,163,184,0.6);
+      border-bottom-left-radius:4px;
+      color:#f9fafb;
+    }
+    .msg-meta{
+      font-size:10px;
+      opacity:0.8;
+      margin-top:3px;
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+      color:#111827;
+    }
+    .msg-other .msg-meta{
+      color:var(--muted);
+    }
+    .msg-name{
+      font-weight:700;
+    }
+    .msg-time{
+      font-variant-numeric:tabular-nums;
+    }
+
+    .meta-panel{
+      width:200px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:11px;
+    }
+    .meta-card{
+      background:rgba(15,23,42,0.9);
+      border-radius:var(--radius-md);
+      border:1px solid rgba(55,65,81,0.9);
+      padding:8px 9px;
+    }
+    .meta-title{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.09em;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .meta-line{
+      font-size:11px;
+      color:#e5e7eb;
+    }
+    .meta-mini{
+      font-size:10px;
+      color:var(--muted);
+      margin-top:3px;
+    }
+    .tag{
+      display:inline-flex;
+      padding:3px 7px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      font-size:10px;
+      color:var(--muted);
+      margin-right:4px;
+      margin-top:3px;
+    }
+
+    @media(max-width:768px){
+      .app{
+        border-radius:0;
+        border:none;
+        box-shadow:none;
+      }
+      .chat-body{
+        flex-direction:column;
+      }
+      .meta-panel{
+        width:100%;
+        flex-direction:row;
+        flex-wrap:wrap;
+      }
+      .meta-card{
+        flex:1;
+        min-width:140px;
+      }
+    }
+
+    .chat-footer{
+      padding:8px 10px;
+      border-top:1px solid rgba(31,41,55,0.9);
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+    }
+    .input-area{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .textarea{
+      width:100%;
+      min-height:40px;
+      max-height:90px;
+      padding:7px 9px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      color:var(--ink);
+      font-size:13px;
+      resize:vertical;
+    }
+    .textarea::placeholder{
+      color:rgba(148,163,184,0.8);
+    }
+    .hint{
+      font-size:10px;
+      color:var(--muted);
+    }
+    .btn{
+      border:none;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+      transition:all 0.25s;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#facc15,#f97316);
+      color:#111827;
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(250,204,21,0.5);
+    }
+    .btn-primary:hover{
+      transform:translateY(-1px);
+      box-shadow:0 12px 26px rgba(250,204,21,0.7);
+    }
+    .btn-ghost{
+      background:rgba(15,23,42,0.9);
+      color:#e5e7eb;
+      border:1px solid rgba(148,163,184,0.6);
+      font-weight:600;
+    }
+    .btn-ghost:hover{
+      border-color:var(--accent);
+    }
+
+    footer{
+      position:relative;
+      z-index:2;
+      margin-top:8px;
+      font-size:10px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    footer span{
+      color:var(--accent);
+      font-weight:700;
+    }
+
+    /* ===== OVERLAY LOGIN ===== */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at top,#020617,#020617);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .overlay.hidden{
+      display:none;
+    }
+    .login-card{
+      width:100%;
+      max-width:380px;
+      background:radial-gradient(circle at top left,rgba(250,204,21,0.18),#020617);
+      border-radius:22px;
+      border:1px solid rgba(148,163,184,0.6);
+      padding:20px 18px 16px;
+      box-shadow:0 26px 60px rgba(0,0,0,1);
+      position:relative;
+      overflow:hidden;
+    }
+    .login-card::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        radial-gradient(circle at 0% 0%,rgba(250,204,21,0.22),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(56,189,248,0.20),transparent 45%);
+      opacity:0.9;
+      pointer-events:none;
+    }
+    .login-head{
+      position:relative;
+      z-index:2;
+      margin-bottom:10px;
+    }
+    .login-logo{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:900;
+      box-shadow:0 14px 30px rgba(234,179,8,0.7);
+      margin-bottom:6px;
+    }
+    .login-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .login-sub{
+      font-size:11px;
+      color:#e5e7eb;
+      margin-top:2px;
+    }
+    .field{
+      position:relative;
+      z-index:2;
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .field label{
+      font-size:11px;
+      color:#e5e7eb;
+      font-weight:600;
+    }
+    .field input,
+    .field select{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.8);
+      background:rgba(15,23,42,0.95);
+      color:var(--ink);
+      padding:8px 11px;
+      font-size:13px;
+      outline:none;
+    }
+    .field input::placeholder{
+      color:rgba(148,163,184,0.85);
+    }
+    .login-tip{
+      margin-top:6px;
+      font-size:10px;
+      color:#e5e7eb;
+    }
+    .login-actions{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .btn-full{
+      width:100%;
+      justify-content:center;
+    }
+    .login-foot{
+      margin-top:8px;
+      font-size:10px;
+      color:#e5e7eb;
+    }
+    .login-foot span{
+      color:var(--accent-green);
+      font-weight:700;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ===== OVERLAY LOGIN ===== -->
+<div class="overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-logo">💬</div>
+      <div class="login-title">DIGIY CHAT</div>
+      <div class="login-sub">
+        Identifiez-vous avec votre <strong>nom</strong> & <strong>téléphone</strong>. 
+        Un seul <strong>DIGIY ID</strong> pour discuter avec vos partenaires.
+      </div>
+    </div>
+
+    <form onsubmit="event.preventDefault(); handleLogin();">
+      <div class="field">
+        <label for="loginName">Nom & prénom</label>
+        <input id="loginName" type="text" placeholder="Ex: Astou Ndiaye" required>
+      </div>
+      <div class="field">
+        <label for="loginPhone">Téléphone WhatsApp (DigiY ID)</label>
+        <input id="loginPhone" type="tel" placeholder="+221 77 000 00 00" required>
+      </div>
+      <div class="field">
+        <label for="loginRole">Profil</label>
+        <select id="loginRole" required>
+          <option value="">Choisir…</option>
+          <option value="client">Client / voyageur</option>
+          <option value="chauffeur">Chauffeur / livreur</option>
+          <option value="commercant">Commerçant / Pro</option>
+          <option value="hebergeur">Hébergeur / Pro LOC</option>
+          <option value="admin">Admin DIGIY</option>
+        </select>
+      </div>
+
+      <div class="login-tip">
+        1 numéro = 1 identité DIGIY. L’ID pourra être utilisé plus tard dans tous les modules (HUB, PAY, LOC...).
+      </div>
+
+      <div class="login-actions">
+        <button type="submit" class="btn btn-primary btn-full">
+          Continuer vers le chat
+        </button>
+        <button type="button" class="btn btn-ghost btn-full" onclick="quickDemoUser()">
+          Utiliser un compte démo
+        </button>
+      </div>
+
+      <div class="login-foot">
+        <strong>Important :</strong> pour l’instant cette page envoie uniquement le contenu du chat dans 
+        <span>Firebase Realtime Database</span>. L’identification officielle par carte d’identité sera raccordée plus tard via DIGIY ID.
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-logo">💬</div>
+      <div>
+        <div class="brand-title">DIGIY CHAT</div>
+        <div class="brand-sub">Messagerie temps réel • Sénégal → Afrique</div>
+      </div>
+    </div>
+
+    <div class="status-box">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span id="statusText">Connecté à Firebase (lecture/écriture)</span>
+      </div>
+      <div class="room-label">
+        Salon : <span class="room-name" id="roomName">global</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="chat-card">
+      <div class="chat-header">
+        <div>
+          <div class="chat-title">Conversation DIGIY</div>
+          <div class="chat-sub">
+            Messages temps réel. Utilisez un salon par partenaire (ex: <code>?room=astou</code>, <code>?room=lamine</code>).
+          </div>
+        </div>
+        <div class="user-mini" id="userMini">
+          Non connecté
+        </div>
+      </div>
+
+      <div class="chat-body">
+        <!-- Messages -->
+        <div class="messages-panel">
+          <div class="messages-list" id="messagesList">
+            <!-- messages dynamiques -->
+          </div>
+        </div>
+
+        <!-- Panneau latéral -->
+        <aside class="meta-panel">
+          <div class="meta-card">
+            <div class="meta-title">Infos salon</div>
+            <div class="meta-line">
+              ID : <span id="roomIdLabel">global</span>
+            </div>
+            <div class="meta-line">
+              Nombre de messages : <span id="msgCount">0</span>
+            </div>
+            <div class="meta-mini">
+              Pour créer un salon dédié : <br>
+              <code>?room=astou</code>, <code>?room=chez-baptiste</code>, etc.
+            </div>
+          </div>
+
+          <div class="meta-card">
+            <div class="meta-title">Mode actuel</div>
+            <div class="meta-line">
+              🔐 Règles : lecture publique, écriture contrôlée via règles Firebase.
+            </div>
+            <div class="meta-mini">
+              À brancher plus tard avec :<br>
+              <span class="tag">DIGIY ID</span>
+              <span class="tag">DIGIY PAY</span>
+              <span class="tag">DIGIY HUB</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="chat-footer">
+        <div class="input-area">
+          <textarea id="messageInput" class="textarea" placeholder="Écrire un message… (Entrée = envoyer, Shift+Entrée = retour à la ligne)"></textarea>
+          <div class="hint">
+            👉 Identité actuelle : <span id="currentIdentity">Anonyme</span> • 
+            <button class="btn btn-ghost" style="padding:3px 8px;font-size:10px;" onclick="forceLogout()">Changer d’utilisateur</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">
+          Envoyer
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>DIGIYLYFE • <span>DIGIY CHAT</span> — Bâti pour le terrain.</div>
+    <div>Data: Firebase Realtime Database — chemin <code>/chatRooms/{roomId}/messages</code>.</div>
+  </footer>
+</div>
+
+<script>
+  // ===== CONFIG FIREBASE (même projet que ton écosystème) =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
+    authDomain: "digiylyfe-ecosystem.firebaseapp.com",
+    databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "digiylyfe-ecosystem",
+    storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
+    messagingSenderId: "1007962643384",
+    appId: "1:1007962643384:web:20d26881e87f0dc37d0d"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // ===== CONST & STATE =====
+  const STORAGE_USER_KEY = "digiy_chat_user_v1";
+  const MAX_MESSAGES = 200;
+
+  let currentUser = null;
+  let roomId = "global";
+  let msgCounter = 0;
+
+  const loginOverlay = document.getElementById("loginOverlay");
+  const statusText = document.getElementById("statusText");
+  const messagesList = document.getElementById("messagesList");
+  const msgCountEl = document.getElementById("msgCount");
+  const roomNameEl = document.getElementById("roomName");
+  const roomIdLabelEl = document.getElementById("roomIdLabel");
+  const userMini = document.getElementById("userMini");
+  const currentIdentity = document.getElementById("currentIdentity");
+  const messageInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  // ===== UTILS =====
+  function parseRoomFromURL(){
+    try{
+      const params = new URLSearchParams(window.location.search);
+      const r = (params.get("room") || "global").trim().toLowerCase();
+      if(!r) return "global";
+      return r.replace(/[^a-z0-9\-_/]/gi,"-");
+    }catch(e){
+      return "global";
+    }
+  }
+
+  function formatTime(ts){
+    if(!ts) return "";
+    try{
+      const d = new Date(ts);
+      return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    }catch(e){
+      return "";
+    }
+  }
+
+  function loadUserFromStorage(){
+    try{
+      const raw = localStorage.getItem(STORAGE_USER_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){
+      console.error("Erreur lecture storage:",e);
+      return null;
+    }
+  }
+
+  function saveUserToStorage(user){
+    currentUser = user;
+    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
+  }
+
+  function updateIdentityUI(){
+    if(currentUser){
+      const label = `${currentUser.name || "Inconnu"} (${currentUser.phone || "?"})`;
+      currentIdentity.textContent = label;
+      userMini.textContent = label;
+    }else{
+      currentIdentity.textContent = "Anonyme (pas de DIGIY ID)";
+      userMini.textContent = "Non connecté";
+    }
+  }
+
+  // ===== LOGIN HANDLERS =====
+  function handleLogin(){
+    const nameInput = document.getElementById("loginName");
+    const phoneInput = document.getElementById("loginPhone");
+    const roleSelect = document.getElementById("loginRole");
+
+    const name = (nameInput.value || "").trim();
+    const phone = (phoneInput.value || "").trim();
+    const role = (roleSelect.value || "").trim();
+
+    if(!name || !phone || !role){
+      alert("Merci de remplir tous les champs pour utiliser DIGIY CHAT.");
+      return;
+    }
+
+    const user = {
+      name,
+      phone,
+      role,
+      createdAt: new Date().toISOString()
+    };
+
+    saveUserToStorage(user);
+    loginOverlay.classList.add("hidden");
+    updateIdentityUI();
+  }
+
+  function quickDemoUser(){
+    const user = {
+      name: "Mamadou Démo",
+      phone: "+221 77 000 00 00",
+      role: "client",
+      createdAt: new Date().toISOString()
+    };
+    saveUserToStorage(user);
+    loginOverlay.classList.add("hidden");
+    updateIdentityUI();
+  }
+
+  function forceLogout(){
+    if(!confirm("Changer d'utilisateur DIGIY CHAT ?")){
+      return;
+    }
+    localStorage.removeItem(STORAGE_USER_KEY);
+    currentUser = null;
+    updateIdentityUI();
+    loginOverlay.classList.remove("hidden");
+  }
+
+  // ===== RENDER MESSAGE =====
+  function renderMessage(msg){
+    const isMe = currentUser && msg.senderPhone && currentUser.phone && (String(msg.senderPhone).trim() === String(currentUser.phone).trim());
+
+    const row = document.createElement("div");
+    row.className = "msg-row" + (isMe ? " me" : "");
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble " + (isMe ? "msg-me" : "msg-other");
+
+    const textDiv = document.createElement("div");
+    textDiv.textContent = msg.text || "";
+    bubble.appendChild(textDiv);
+
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "msg-meta";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "msg-name";
+    nameSpan.textContent = msg.senderName || "—";
+
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "msg-time";
+    timeSpan.textContent = formatTime(msg.createdAt);
+
+    metaDiv.appendChild(nameSpan);
+    metaDiv.appendChild(timeSpan);
+
+    bubble.appendChild(metaDiv);
+    row.appendChild(bubble);
+
+    messagesList.appendChild(row);
+    messagesList.scrollTop = messagesList.scrollHeight || 999999;
+  }
+
+  // ===== CHAT LOGIC =====
+  function sendMessage(){
+    const text = (messageInput.value || "").trim();
+    if(!text){
+      return;
+    }
+    if(!currentUser){
+      alert("Merci de vous identifier avant d'envoyer un message.");
+      return;
+    }
+
+    sendBtn.disabled = true;
+
+    const payload = {
+      text,
+      senderName: currentUser.name || "",
+      senderPhone: currentUser.phone || "",
+      senderRole: currentUser.role || "",
+      createdAt: Date.now()
+    };
+
+    const ref = db.ref("chatRooms/" + roomId + "/messages");
+    ref.push(payload)
+      .then(() => {
+        messageInput.value = "";
+        sendBtn.disabled = false;
+      })
+      .catch(err => {
+        console.error("Erreur envoi message:",err);
+        alert("Erreur d'envoi. Vérifie la connexion ou les règles Firebase.");
+        sendBtn.disabled = false;
+      });
+  }
+
+  function initChatListener(){
+    msgCounter = 0;
+    msgCountEl.textContent = "0";
+    messagesList.innerHTML = "";
+
+    const ref = db.ref("chatRooms/" + roomId + "/messages").limitToLast(MAX_MESSAGES);
+
+    ref.off(); // sécurité si rappel
+    ref.on("child_added", snap => {
+      const val = snap.val() || {};
+      msgCounter++;
+      msgCountEl.textContent = String(msgCounter);
+      renderMessage(val);
+    }, err => {
+      console.error("Erreur listener:",err);
+      statusText.textContent = "Erreur écoute Firebase";
+    });
+  }
+
+  // ===== EVENTS =====
+  messageInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // ===== INIT =====
+  document.addEventListener("DOMContentLoaded", () => {
+    try{
+      roomId = parseRoomFromURL();
+      roomNameEl.textContent = roomId;
+      roomIdLabelEl.textContent = roomId;
+    }catch(e){
+      console.error(e);
+    }
+
+    currentUser = loadUserFromStorage();
+    if(currentUser){
+      loginOverlay.classList.add("hidden");
+    }
+    updateIdentityUI();
+
+    statusText.textContent = "Connecté à Firebase (lecture seule + écriture salon '" + roomId + "')";
+    initChatListener();
+  });
+</script>
+
+</body>
+</html>
