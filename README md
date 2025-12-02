@@ -1,0 +1,55 @@
+# ⚡ DIGIY CHAT PRO  
+**Système de messagerie temps réel de l’écosystème DIGIYLYFE.**
+
+DIGIY CHAT PRO est une messagerie professionnelle, légère et instantanée, pensée pour les commerçants, chauffeurs, hébergeurs et partenaires de l’écosystème DIGIY.  
+Il permet d’échanger directement avec les clients sans passer par WhatsApp ou des plateformes tierces.
+
+---
+
+## 🎯 Objectifs
+- Offrir un outil de communication simple et souverain
+- Connecter les professionnels au terrain (Saly, Dakar, Afrique)
+- Centraliser les échanges dans un environnement DIGIY unique
+- Fluidifier les réservations, commandes, demandes d’infos
+- Éviter les commissions & la dépendance aux OTA
+
+---
+
+## 🚀 Fonctionnalités principales
+- **Temps réel (Firebase Realtime Database)**
+- Système de **salons (rooms)** :
+  - `/chatRooms/global/`
+  - `/chatRooms/astou-boutique/`
+  - `/chatRooms/lamine/`
+  - `/chatRooms/chez-baptiste/`
+- Identification utilisateur :
+  - nom
+  - téléphone
+  - rôle (client, commerçant, chauffeur, hébergeur…)
+- Interface mobile-first noire & or (identité DIGIYLYFE)
+- Stockage automatique des messages
+- Fonctionne 100% statique → **GitHub Pages** compatible
+
+---
+
+## 🛠️ Technologies
+- **HTML / CSS / JS Vanilla**  
+- **Firebase Realtime Database** (SDK compat 10.x)  
+- Hébergement : **GitHub Pages**
+
+---
+
+## 📦 Installation (GitHub Pages)
+1. Cloner le dépôt  
+2. Mettre votre configuration Firebase dans `index.html` :
+   ```js
+   const firebaseConfig = {
+     apiKey: "...",
+     authDomain: "...",
+     databaseURL: "...",
+     projectId: "...",
+     storageBucket: "...",
+     messagingSenderId: "...",
+     appId: "..."
+   };
+   firebase.initializeApp(firebaseConfig);
