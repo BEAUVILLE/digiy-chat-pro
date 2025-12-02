@@ -520,6 +520,156 @@
       font-weight:700;
     }
 
+    /* ===== DIGIY SERVICE BAR V2 ===== */
+    .service-panel{
+      position:fixed;
+      right:16px;
+      bottom:80px;
+      width:280px;
+      max-height:70vh;
+      background:radial-gradient(circle at top,#020617,#020617);
+      border-radius:18px;
+      border:1px solid rgba(148,163,184,0.5);
+      box-shadow:0 20px 50px rgba(0,0,0,0.9);
+      padding:10px 10px 12px;
+      z-index:40;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .service-panel.hidden{
+      display:none;
+    }
+    .service-panel-header{
+      border-bottom:1px solid rgba(31,41,55,0.9);
+      padding-bottom:6px;
+      margin-bottom:6px;
+    }
+    .service-panel-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--accent);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .service-panel-title .icon{
+      font-size:16px;
+    }
+    .service-panel-sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .service-panel-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow-y:auto;
+      padding-right:4px;
+    }
+    .service-panel-list::-webkit-scrollbar{
+      width:4px;
+    }
+    .service-panel-list::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.6);
+      border-radius:999px;
+    }
+    .service-item{
+      border-radius:12px;
+      border:1px solid rgba(31,41,55,0.9);
+      background:rgba(15,23,42,0.95);
+      padding:7px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .service-item-title{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      font-weight:600;
+      color:#e5e7eb;
+    }
+    .service-item-title .icon{
+      font-size:15px;
+    }
+    .service-item-desc{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .service-item-actions{
+      display:flex;
+      gap:6px;
+      margin-top:4px;
+    }
+    .service-btn{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      font-size:11px;
+      padding:5px 8px;
+      cursor:pointer;
+      white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+    }
+    .service-btn.primary{
+      background:linear-gradient(135deg,#facc15,#f97316);
+      color:#111827;
+      font-weight:700;
+    }
+    .service-btn.ghost{
+      background:rgba(15,23,42,0.9);
+      color:#e5e7eb;
+      border:1px solid rgba(148,163,184,0.6);
+      font-weight:500;
+    }
+
+    .service-fab{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      width:52px;
+      height:52px;
+      border-radius:999px;
+      border:none;
+      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+      box-shadow:0 18px 40px rgba(234,179,8,0.7);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      z-index:45;
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .service-fab .fab-icon{
+      font-size:22px;
+    }
+    .service-fab:hover{
+      transform:translateY(-2px);
+      box-shadow:0 22px 50px rgba(234,179,8,0.9);
+    }
+    .service-fab.open{
+      transform:translateY(0) scale(1.02) rotate(8deg);
+    }
+
+    @media(max-width:600px){
+      .service-panel{
+        right:10px;
+        bottom:76px;
+        width:260px;
+      }
+      .service-fab{
+        right:10px;
+        bottom:10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -672,6 +822,26 @@
     <div>Data: Firebase Realtime Database — chemin <code>/chatRooms/{roomId}/messages</code>.</div>
   </footer>
 </div>
+
+<!-- === DIGIY SERVICE BAR V2 (HTML) === -->
+<div id="digiyServicePanel" class="service-panel hidden">
+  <div class="service-panel-header">
+    <div class="service-panel-title">
+      <span class="icon">⚡</span> SUPER APP DIGIY
+    </div>
+    <div class="service-panel-sub">
+      Accès rapide à tes services depuis le chat.
+    </div>
+  </div>
+
+  <div id="servicePanelList" class="service-panel-list">
+    <!-- Rempli en JS -->
+  </div>
+</div>
+
+<button id="digiyServiceFab" class="service-fab" type="button" onclick="toggleServicePanel()">
+  <span class="fab-icon">⚡</span>
+</button>
 
 <script>
   // ===== CONFIG FIREBASE (même projet que ton écosystème) =====
@@ -901,7 +1071,7 @@
     }
   });
 
-  // ===== INIT =====
+  // ===== INIT CHAT =====
   document.addEventListener("DOMContentLoaded", () => {
     try{
       roomId = parseRoomFromURL();
@@ -922,5 +1092,138 @@
   });
 </script>
 
+<script>
+  // === CONFIG DES SERVICES DIGIY AFFICHÉS DANS LE PANNEAU ===
+  const DIGIY_SERVICES = [
+    {
+      id: "hub",
+      label: "DIGIY HUB",
+      emoji: "⚡",
+      description: "Point d’entrée unique de l’écosystème DIGIY.",
+      href: "https://digiylyfe.com/hub/"
+    },
+    {
+      id: "driver",
+      label: "DIGIY DRIVER",
+      emoji: "🚗",
+      description: "Commander une course AIBD, Dakar, Saly…",
+      href: "https://beauville.github.io/digiy-driver-client/"
+    },
+    {
+      id: "loc",
+      label: "DIGIY LOC",
+      emoji: "🏡",
+      description: "Réservation d’hébergements sans commission.",
+      href: "https://beauville.github.io/chez-baptiste-digiy-loc/"
+    },
+    {
+      id: "pos",
+      label: "DIGIY POS",
+      emoji: "🧾",
+      description: "Caisse & vitrine boutiques partenaires.",
+      href: "https://beauville.github.io/Caisse-officielle-ASTOU/"
+    },
+    {
+      id: "market",
+      label: "DIGIY MARKET",
+      emoji: "🛒",
+      description: "Annonces locales & bonnes affaires terrain.",
+      href: "https://digiylyfe.com/digiy-bonne-affaire/"
+    },
+    {
+      id: "jobs",
+      label: "DIGIY JOBS",
+      emoji: "💼",
+      description: "Offres & candidatures pour le terrain.",
+      href: "https://digiylyfe.com/digiy-jobs/"
+    },
+    {
+      id: "inscription",
+      label: "INSCRIPTION PARTENAIRE",
+      emoji: "📝",
+      description: "Créer un compte DIGIYLYFE complet.",
+      href: "https://beauville.github.io/portail-inscription/"
+    }
+  ];
+
+  const servicePanel = document.getElementById("digiyServicePanel");
+  const serviceFab = document.getElementById("digiyServiceFab");
+  const serviceList = document.getElementById("servicePanelList");
+
+  // === OUVRIR / FERMER LE PANNEAU ===
+  function toggleServicePanel() {
+    if (!servicePanel) return;
+    servicePanel.classList.toggle("hidden");
+    if (serviceFab) {
+      serviceFab.classList.toggle("open");
+    }
+  }
+
+  // === OUVRIR UN SERVICE DANS UN NOUVEL ONGLET ===
+  function openDigiyService(id) {
+    const svc = DIGIY_SERVICES.find(s => s.id === id);
+    if (!svc || !svc.href) return;
+    window.open(svc.href, "_blank", "noopener");
+  }
+
+  // === ENVOYER UNE QUESTION PRÉ-REMPLIE DANS LE CHAT ===
+  function sendHelpMessage(serviceId) {
+    const svc = DIGIY_SERVICES.find(s => s.id === serviceId);
+    const input = document.getElementById("messageInput");
+
+    if (!input) {
+      console.warn("messageInput introuvable, je ne peux pas pré-remplir le chat.");
+      return;
+    }
+
+    const base = "Bonjour DIGIY, j’ai une question sur : ";
+    input.value = svc
+      ? `${base}${svc.label} (${svc.href})`
+      : base;
+
+    input.focus();
+    toggleServicePanel();
+  }
+
+  // === RENDU DES CARTES DANS LE PANNEAU ===
+  function renderServicePanel() {
+    if (!serviceList) return;
+    serviceList.innerHTML = "";
+
+    DIGIY_SERVICES.forEach(svc => {
+      const item = document.createElement("div");
+      item.className = "service-item";
+
+      item.innerHTML = `
+        <div class="service-item-main">
+          <div class="service-item-title">
+            <span class="icon">${svc.emoji}</span>
+            <span class="label">${svc.label}</span>
+          </div>
+          <div class="service-item-desc">
+            ${svc.description}
+          </div>
+        </div>
+        <div class="service-item-actions">
+          <button type="button" class="service-btn primary"
+            onclick="openDigiyService('${svc.id}')">
+            Ouvrir
+          </button>
+          <button type="button" class="service-btn ghost"
+            onclick="sendHelpMessage('${svc.id}')">
+            Poser une question ici
+          </button>
+        </div>
+      `;
+
+      serviceList.appendChild(item);
+    });
+  }
+
+  // === INIT AU CHARGEMENT ===
+  document.addEventListener("DOMContentLoaded", () => {
+    renderServicePanel();
+  });
+</script>
 </body>
 </html>
