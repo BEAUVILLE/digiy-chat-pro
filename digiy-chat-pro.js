@@ -1,6 +1,6 @@
 // digiy-chat-pro.js
 (function () {
-  // CONFIG PAR DÉFAUT (surchargée par window.DIGIY_CHAT_OPTIONS si présent)
+  // CONFIG PAR DÉFAUT ...
   const defaultConfig = {
     proChatUrl: "https://beauville.github.io/digiy-chat-pro/",
     whatsappNumber: "+221770000000",
@@ -13,6 +13,8 @@
   const userConfig = (window.DIGIY_CHAT_OPTIONS || {});
   const config = Object.assign({}, defaultConfig, userConfig);
 
+  // ... (tout le reste jusqu’à la fin)
+})();
   // INJECTION CSS
   function injectStyles() {
     if (document.getElementById("digiy-chat-pro-style")) return;
