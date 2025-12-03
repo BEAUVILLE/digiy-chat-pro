@@ -1,19 +1,19 @@
 // digiy-chat-pro.js
 (function () {
-  // 1) CONFIG PAR DÉFAUT — tu peux les surcharger avec window.DIGIY_CHAT_OPTIONS
+  // CONFIG PAR DÉFAUT (surchargée par window.DIGIY_CHAT_OPTIONS si présent)
   const defaultConfig = {
     proChatUrl: "https://beauville.github.io/digiy-chat-pro/",
-    whatsappNumber: "+221770000000", // 🟠 À CHANGER
-    callNumber: "+221770000000",     // 🟠 À CHANGER
+    whatsappNumber: "+221770000000",
+    callNumber: "+221770000000",
     businessName: "DIGIY PRO CHAT",
-    primaryColor: "#f97316", // Orange DIGIY
+    primaryColor: "#f97316",
     darkBg: "#020617"
   };
 
   const userConfig = (window.DIGIY_CHAT_OPTIONS || {});
   const config = Object.assign({}, defaultConfig, userConfig);
 
-  // 2) CRÉATION DU STYLE
+  // INJECTION CSS
   function injectStyles() {
     if (document.getElementById("digiy-chat-pro-style")) return;
 
@@ -23,7 +23,7 @@
       .digiy-chat-fab {
         position: fixed;
         right: 18px;
-        bottom: 18px;
+        top: 18px;
         z-index: 99999;
         background: ${config.primaryColor};
         color: #0b1120;
@@ -71,7 +71,8 @@
       .digiy-chat-panel {
         position: fixed;
         right: 10px;
-        bottom: 76px;
+        top: 70px;
+        bottom: auto;
         width: 360px;
         max-width: calc(100% - 20px);
         max-height: 80vh;
@@ -198,7 +199,8 @@
         .digiy-chat-panel {
           left: 10px;
           right: 10px;
-          bottom: 80px;
+          top: 70px;
+          bottom: auto;
           width: auto;
           max-height: 70vh;
         }
@@ -207,7 +209,7 @@
     document.head.appendChild(style);
   }
 
-  // 3) FAB (bouton flottant)
+  // BOUTON FLOTTANT
   function createFab() {
     const fab = document.createElement("button");
     fab.className = "digiy-chat-fab";
@@ -228,8 +230,9 @@
     return fab;
   }
 
-  // 4) PANEL
   let panel, backdrop;
+
+  // PANEL
   function createPanel() {
     backdrop = document.createElement("div");
     backdrop.className = "digiy-chat-panel-backdrop";
@@ -315,7 +318,7 @@
     }
   }
 
-  // 5) ACTIONS
+  // ACTIONS
   function handleAction(action) {
     if (action === "pro-chat") {
       window.open(config.proChatUrl, "_blank", "noopener,noreferrer");
@@ -339,7 +342,7 @@
     }
   }
 
-  // 6) INIT
+  // INIT
   function init() {
     injectStyles();
     createFab();
