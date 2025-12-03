@@ -1,1229 +1,835 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>DIGIY CHAT — Temps réel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="DIGIY CHAT — Messagerie temps réel pour l'écosystème DIGIYLYFE.">
-  <meta name="theme-color" content="#020617">
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIGIY PAY — Wallet & Paiements 0% Commission</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    :root{
-      --bg:#020617;
-      --bg-soft:#030712;
-      --card:#020617;
-      --accent:#facc15;
-      --accent-soft:#f97316;
-      --accent-green:#22c55e;
-      --ink:#f9fafb;
-      --muted:#9ca3af;
-      --line:#1f2937;
-      --danger:#ef4444;
-      --radius-xl:22px;
-      --radius-lg:16px;
-      --radius-md:12px;
-      --shadow-soft:0 22px 50px rgba(0,0,0,0.9);
-    }
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:-apple-system,BlinkMacSystemFont,system-ui,"SF Pro Text","Segoe UI",sans-serif;
-    }
-    body{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at top,rgba(250,204,21,0.16),transparent 60%),
-        radial-gradient(circle at bottom,rgba(56,189,248,0.15),transparent 55%),
-        #020617;
-      color:var(--ink);
-      display:flex;
-      justify-content:center;
-      padding:10px;
-    }
-    .app{
-      width:100%;
-      max-width:900px;
-      min-height:80vh;
-      background:linear-gradient(135deg,#020617 0%,#020819 50%,#020617 100%);
-      border-radius:24px;
-      border:1px solid rgba(148,163,184,0.35);
-      box-shadow:var(--shadow-soft);
-      padding:12px 14px 14px;
-      display:flex;
-      flex-direction:column;
-      position:relative;
-      overflow:hidden;
-    }
-    .app::before{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background:
-        radial-gradient(circle at 0% 0%,rgba(250,204,21,0.12),transparent 55%),
-        radial-gradient(circle at 100% 100%,rgba(34,197,94,0.10),transparent 45%);
-      opacity:0.85;
-      pointer-events:none;
+    :root {
+      --bg-dark: #0A0E1A;
+      --bg-soft: #0F1419;
+      --card: #1A1F2E;
+      --accent: #FF6B35;
+      --secondary: #00B4D8;
+      --success: #06D6A0;
+      --warning: #FFB800;
+      --danger: #EF4444;
+      --ink: #FFFFFF;
+      --ink-soft: #E5E7EB;
+      --muted: #9CA3AF;
+      --border: rgba(255, 255, 255, 0.08);
     }
 
-    header{
-      position:relative;
-      z-index:2;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin-bottom:10px;
-      flex-wrap:wrap;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .brand-logo{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:22px;
-      font-weight:900;
-      box-shadow:0 12px 30px rgba(234,179,8,0.6);
-    }
-    .brand-title{
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:0.1em;
-      text-transform:uppercase;
-      color:var(--accent);
-    }
-    .brand-sub{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:500;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    .status-box{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:4px;
-      font-size:11px;
-    }
-    .status-pill{
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.6);
-      background:rgba(15,23,42,0.9);
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      color:var(--muted);
-    }
-    .status-dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:var(--accent-green);
-      box-shadow:0 0 12px rgba(34,197,94,0.9);
-    }
-    .room-label{
-      font-size:11px;
-      color:var(--muted);
-    }
-    .room-name{
-      color:var(--accent-soft);
-      font-weight:700;
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-soft) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 2rem;
     }
 
-    main{
-      position:relative;
-      z-index:2;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-top:4px;
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
-    .chat-card{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      background:radial-gradient(circle at top left,rgba(15,23,42,0.95),#020617);
-      border-radius:var(--radius-xl);
-      border:1px solid rgba(30,64,175,0.6);
-      box-shadow:0 18px 44px rgba(15,23,42,0.95);
-      overflow:hidden;
+    /* HEADER */
+    header {
+      background: rgba(26, 31, 46, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
-    .chat-header{
-      padding:10px 14px 8px;
-      border-bottom:1px solid rgba(31,41,55,0.9);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .chat-title{
-      font-size:13px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:0.09em;
-      color:#e5e7eb;
-    }
-    .chat-sub{
-      font-size:11px;
-      color:var(--muted);
-    }
-    .user-mini{
-      font-size:11px;
-      color:#e5e7eb;
-      text-align:right;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    .chat-body{
-      flex:1;
-      display:flex;
-      padding:8px 10px;
-      gap:8px;
-      overflow:hidden;
-    }
-    .messages-panel{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      background:rgba(15,23,42,0.85);
-      border-radius:var(--radius-lg);
-      border:1px solid rgba(31,41,55,0.9);
-      overflow:hidden;
-    }
-    .messages-list{
-      flex:1;
-      padding:10px;
-      overflow-y:auto;
-      scroll-behavior:smooth;
-    }
-    .messages-list::-webkit-scrollbar{
-      width:4px;
-    }
-    .messages-list::-webkit-scrollbar-thumb{
-      background:rgba(148,163,184,0.7);
-      border-radius:999px;
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #E85A28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
     }
 
-    .msg-row{
-      display:flex;
-      margin-bottom:6px;
-      max-width:100%;
-    }
-    .msg-row.me{
-      justify-content:flex-end;
-    }
-    .msg-bubble{
-      max-width:80%;
-      padding:7px 10px;
-      border-radius:14px;
-      font-size:13px;
-      line-height:1.4;
-      position:relative;
-    }
-    .msg-me{
-      background:linear-gradient(135deg,#facc15,#f97316);
-      color:#111827;
-      border-bottom-right-radius:4px;
-    }
-    .msg-other{
-      background:#020617;
-      border:1px solid rgba(148,163,184,0.6);
-      border-bottom-left-radius:4px;
-      color:#f9fafb;
-    }
-    .msg-meta{
-      font-size:10px;
-      opacity:0.8;
-      margin-top:3px;
-      display:flex;
-      justify-content:space-between;
-      gap:6px;
-      color:#111827;
-    }
-    .msg-other .msg-meta{
-      color:var(--muted);
-    }
-    .msg-name{
-      font-weight:700;
-    }
-    .msg-time{
-      font-variant-numeric:tabular-nums;
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
     }
 
-    .meta-panel{
-      width:200px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      font-size:11px;
-    }
-    .meta-card{
-      background:rgba(15,23,42,0.9);
-      border-radius:var(--radius-md);
-      border:1px solid rgba(55,65,81,0.9);
-      padding:8px 9px;
-    }
-    .meta-title{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.09em;
-      color:var(--muted);
-      margin-bottom:4px;
-    }
-    .meta-line{
-      font-size:11px;
-      color:#e5e7eb;
-    }
-    .meta-mini{
-      font-size:10px;
-      color:var(--muted);
-      margin-top:3px;
-    }
-    .tag{
-      display:inline-flex;
-      padding:3px 7px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.6);
-      font-size:10px;
-      color:var(--muted);
-      margin-right:4px;
-      margin-top:3px;
+    .brand-text p {
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 600;
     }
 
-    @media(max-width:768px){
-      .app{
-        border-radius:0;
-        border:none;
-        box-shadow:none;
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.75rem 1.25rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.125rem;
+    }
+
+    .user-details h3 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: 0.125rem;
+    }
+
+    .user-details p {
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    /* BALANCE CARD */
+    .balance-section {
+      background: linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(37, 41, 56, 0.6) 100%);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-section::before {
+      content: '💰';
+      position: absolute;
+      font-size: 12rem;
+      top: -3rem;
+      right: -3rem;
+      opacity: 0.03;
+    }
+
+    .balance-label {
+      font-size: 0.9375rem;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .balance-amount {
+      font-family: 'Outfit', sans-serif;
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+      line-height: 1;
+    }
+
+    .balance-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.875rem 1.75rem;
+      border-radius: 100px;
+      border: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #E85A28);
+      color: var(--ink);
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--ink-soft);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: rgba(255, 107, 53, 0.1);
+    }
+
+    /* PAYMENT METHODS */
+    .payment-methods {
+      background: linear-gradient(135deg, rgba(26, 31, 46, 0.7), rgba(15, 23, 42, 0.8));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      color: var(--ink);
+    }
+
+    .methods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .method-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .method-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .method-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      background: rgba(26, 31, 46, 0.6);
+      border: 1px solid var(--border);
+    }
+
+    .method-card.wave .method-icon {
+      background: linear-gradient(135deg, #00B4D8, #0077B6);
+    }
+
+    .method-card.orange .method-icon {
+      background: linear-gradient(135deg, #FF6B35, #F97316);
+    }
+
+    .method-card.free .method-icon {
+      background: linear-gradient(135deg, #06D6A0, #059669);
+    }
+
+    .method-card.cash .method-icon {
+      background: linear-gradient(135deg, #FFB800, #F59E0B);
+    }
+
+    .method-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: var(--ink);
+    }
+
+    .method-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .method-badge {
+      display: inline-block;
+      padding: 0.375rem 0.875rem;
+      background: rgba(6, 214, 160, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* TRANSACTIONS */
+    .transactions {
+      background: linear-gradient(135deg, rgba(26, 31, 46, 0.7), rgba(15, 23, 42, 0.8));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      padding: 2rem;
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .transaction-item:hover {
+      background: rgba(15, 23, 42, 0.6);
+      border-color: var(--accent);
+    }
+
+    .transaction-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .transaction-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(26, 31, 46, 0.8);
+    }
+
+    .transaction-details h4 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: var(--ink);
+    }
+
+    .transaction-details p {
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .transaction-amount {
+      text-align: right;
+    }
+
+    .transaction-amount .amount {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .transaction-amount.positive .amount {
+      color: var(--success);
+    }
+
+    .transaction-amount.negative .amount {
+      color: var(--danger);
+    }
+
+    .transaction-amount .date {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 26, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 1000;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, rgba(26, 31, 46, 0.95), rgba(15, 23, 42, 0.98));
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.875rem 1.25rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--ink);
+      font-size: 0.9375rem;
+      font-family: 'Manrope', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
+    }
+
+    .commission-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(6, 214, 160, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--success);
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
       }
-      .chat-body{
-        flex-direction:column;
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      .meta-panel{
-        width:100%;
-        flex-direction:row;
-        flex-wrap:wrap;
+
+      .balance-amount {
+        font-size: 3rem;
       }
-      .meta-card{
-        flex:1;
-        min-width:140px;
+
+      .methods-grid {
+        grid-template-columns: 1fr;
       }
-    }
 
-    .chat-footer{
-      padding:8px 10px;
-      border-top:1px solid rgba(31,41,55,0.9);
-      display:flex;
-      align-items:flex-end;
-      gap:8px;
-    }
-    .input-area{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .textarea{
-      width:100%;
-      min-height:40px;
-      max-height:90px;
-      padding:7px 9px;
-      border-radius:var(--radius-md);
-      border:1px solid rgba(148,163,184,0.6);
-      background:rgba(15,23,42,0.9);
-      color:var(--ink);
-      font-size:13px;
-      resize:vertical;
-    }
-    .textarea::placeholder{
-      color:rgba(148,163,184,0.8);
-    }
-    .hint{
-      font-size:10px;
-      color:var(--muted);
-    }
-    .btn{
-      border:none;
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:12px;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      white-space:nowrap;
-      transition:all 0.25s;
-    }
-    .btn-primary{
-      background:linear-gradient(135deg,#facc15,#f97316);
-      color:#111827;
-      font-weight:800;
-      box-shadow:0 8px 18px rgba(250,204,21,0.5);
-    }
-    .btn-primary:hover{
-      transform:translateY(-1px);
-      box-shadow:0 12px 26px rgba(250,204,21,0.7);
-    }
-    .btn-ghost{
-      background:rgba(15,23,42,0.9);
-      color:#e5e7eb;
-      border:1px solid rgba(148,163,184,0.6);
-      font-weight:600;
-    }
-    .btn-ghost:hover{
-      border-color:var(--accent);
-    }
-
-    footer{
-      position:relative;
-      z-index:2;
-      margin-top:8px;
-      font-size:10px;
-      color:var(--muted);
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    footer span{
-      color:var(--accent);
-      font-weight:700;
-    }
-
-    /* ===== OVERLAY LOGIN ===== */
-    .overlay{
-      position:fixed;
-      inset:0;
-      background:radial-gradient(circle at top,#020617,#020617);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:50;
-    }
-    .overlay.hidden{
-      display:none;
-    }
-    .login-card{
-      width:100%;
-      max-width:380px;
-      background:radial-gradient(circle at top left,rgba(250,204,21,0.18),#020617);
-      border-radius:22px;
-      border:1px solid rgba(148,163,184,0.6);
-      padding:20px 18px 16px;
-      box-shadow:0 26px 60px rgba(0,0,0,1);
-      position:relative;
-      overflow:hidden;
-    }
-    .login-card::before{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background:
-        radial-gradient(circle at 0% 0%,rgba(250,204,21,0.22),transparent 55%),
-        radial-gradient(circle at 100% 100%,rgba(56,189,248,0.20),transparent 45%);
-      opacity:0.9;
-      pointer-events:none;
-    }
-    .login-head{
-      position:relative;
-      z-index:2;
-      margin-bottom:10px;
-    }
-    .login-logo{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:22px;
-      font-weight:900;
-      box-shadow:0 14px 30px rgba(234,179,8,0.7);
-      margin-bottom:6px;
-    }
-    .login-title{
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-    }
-    .login-sub{
-      font-size:11px;
-      color:#e5e7eb;
-      margin-top:2px;
-    }
-    .field{
-      position:relative;
-      z-index:2;
-      margin-top:8px;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .field label{
-      font-size:11px;
-      color:#e5e7eb;
-      font-weight:600;
-    }
-    .field input,
-    .field select{
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.8);
-      background:rgba(15,23,42,0.95);
-      color:var(--ink);
-      padding:8px 11px;
-      font-size:13px;
-      outline:none;
-    }
-    .field input::placeholder{
-      color:rgba(148,163,184,0.85);
-    }
-    .login-tip{
-      margin-top:6px;
-      font-size:10px;
-      color:#e5e7eb;
-    }
-    .login-actions{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .btn-full{
-      width:100%;
-      justify-content:center;
-    }
-    .login-foot{
-      margin-top:8px;
-      font-size:10px;
-      color:#e5e7eb;
-    }
-    .login-foot span{
-      color:var(--accent-green);
-      font-weight:700;
-    }
-
-    /* ===== DIGIY SERVICE BAR V2 ===== */
-    .service-panel{
-      position:fixed;
-      right:16px;
-      bottom:80px;
-      width:280px;
-      max-height:70vh;
-      background:radial-gradient(circle at top,#020617,#020617);
-      border-radius:18px;
-      border:1px solid rgba(148,163,184,0.5);
-      box-shadow:0 20px 50px rgba(0,0,0,0.9);
-      padding:10px 10px 12px;
-      z-index:40;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .service-panel.hidden{
-      display:none;
-    }
-    .service-panel-header{
-      border-bottom:1px solid rgba(31,41,55,0.9);
-      padding-bottom:6px;
-      margin-bottom:6px;
-    }
-    .service-panel-title{
-      font-size:13px;
-      font-weight:700;
-      color:var(--accent);
-      display:flex;
-      align-items:center;
-      gap:6px;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-    .service-panel-title .icon{
-      font-size:16px;
-    }
-    .service-panel-sub{
-      font-size:11px;
-      color:var(--muted);
-      margin-top:2px;
-    }
-    .service-panel-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      overflow-y:auto;
-      padding-right:4px;
-    }
-    .service-panel-list::-webkit-scrollbar{
-      width:4px;
-    }
-    .service-panel-list::-webkit-scrollbar-thumb{
-      background:rgba(148,163,184,0.6);
-      border-radius:999px;
-    }
-    .service-item{
-      border-radius:12px;
-      border:1px solid rgba(31,41,55,0.9);
-      background:rgba(15,23,42,0.95);
-      padding:7px 8px;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .service-item-title{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:12px;
-      font-weight:600;
-      color:#e5e7eb;
-    }
-    .service-item-title .icon{
-      font-size:15px;
-    }
-    .service-item-desc{
-      font-size:11px;
-      color:var(--muted);
-    }
-    .service-item-actions{
-      display:flex;
-      gap:6px;
-      margin-top:4px;
-    }
-    .service-btn{
-      flex:1;
-      border:none;
-      border-radius:999px;
-      font-size:11px;
-      padding:5px 8px;
-      cursor:pointer;
-      white-space:nowrap;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-    }
-    .service-btn.primary{
-      background:linear-gradient(135deg,#facc15,#f97316);
-      color:#111827;
-      font-weight:700;
-    }
-    .service-btn.ghost{
-      background:rgba(15,23,42,0.9);
-      color:#e5e7eb;
-      border:1px solid rgba(148,163,184,0.6);
-      font-weight:500;
-    }
-
-    .service-fab{
-      position:fixed;
-      right:16px;
-      bottom:16px;
-      width:52px;
-      height:52px;
-      border-radius:999px;
-      border:none;
-      background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
-      box-shadow:0 18px 40px rgba(234,179,8,0.7);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      z-index:45;
-      transition:transform 0.2s, box-shadow 0.2s;
-    }
-    .service-fab .fab-icon{
-      font-size:22px;
-    }
-    .service-fab:hover{
-      transform:translateY(-2px);
-      box-shadow:0 22px 50px rgba(234,179,8,0.9);
-    }
-    .service-fab.open{
-      transform:translateY(0) scale(1.02) rotate(8deg);
-    }
-
-    @media(max-width:600px){
-      .service-panel{
-        right:10px;
-        bottom:76px;
-        width:260px;
+      .balance-actions {
+        flex-direction: column;
+        width: 100%;
       }
-      .service-fab{
-        right:10px;
-        bottom:10px;
+
+      .btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">💳</div>
+        <div class="brand-text">
+          <h1>DIGIY PAY</h1>
+          <p>Wallet & Paiements • 0% Commission</p>
+        </div>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar">JB</div>
+        <div class="user-details">
+          <h3 id="userName">JB BAPT</h3>
+          <p id="userPhone">+221 77 134 28 89</p>
+        </div>
+      </div>
+    </header>
 
-<!-- ===== OVERLAY LOGIN ===== -->
-<div class="overlay" id="loginOverlay">
-  <div class="login-card">
-    <div class="login-head">
-      <div class="login-logo">💬</div>
-      <div class="login-title">DIGIY CHAT</div>
-      <div class="login-sub">
-        Identifiez-vous avec votre <strong>nom</strong> & <strong>téléphone</strong>. 
-        Un seul <strong>DIGIY ID</strong> pour discuter avec vos partenaires.
-      </div>
-    </div>
-
-    <form onsubmit="event.preventDefault(); handleLogin();">
-      <div class="field">
-        <label for="loginName">Nom & prénom</label>
-        <input id="loginName" type="text" placeholder="Ex: Astou Ndiaye" required>
-      </div>
-      <div class="field">
-        <label for="loginPhone">Téléphone WhatsApp (DigiY ID)</label>
-        <input id="loginPhone" type="tel" placeholder="+221 77 000 00 00" required>
-      </div>
-      <div class="field">
-        <label for="loginRole">Profil</label>
-        <select id="loginRole" required>
-          <option value="">Choisir…</option>
-          <option value="client">Client / voyageur</option>
-          <option value="chauffeur">Chauffeur / livreur</option>
-          <option value="commercant">Commerçant / Pro</option>
-          <option value="hebergeur">Hébergeur / Pro LOC</option>
-          <option value="admin">Admin DIGIY</option>
-        </select>
-      </div>
-
-      <div class="login-tip">
-        1 numéro = 1 identité DIGIY. L’ID pourra être utilisé plus tard dans tous les modules (HUB, PAY, LOC...).
-      </div>
-
-      <div class="login-actions">
-        <button type="submit" class="btn btn-primary btn-full">
-          Continuer vers le chat
+    <!-- BALANCE SECTION -->
+    <section class="balance-section">
+      <div class="balance-label">Solde disponible</div>
+      <div class="balance-amount" id="balance">0 FCFA</div>
+      <div class="balance-actions">
+        <button class="btn btn-primary" onclick="openModal('recharge')">
+          💰 Recharger
         </button>
-        <button type="button" class="btn btn-ghost btn-full" onclick="quickDemoUser()">
-          Utiliser un compte démo
+        <button class="btn btn-primary" onclick="openModal('transfer')">
+          💸 Envoyer
+        </button>
+        <button class="btn btn-secondary" onclick="openModal('withdraw')">
+          🏦 Retirer
+        </button>
+        <button class="btn btn-secondary" onclick="viewHistory()">
+          📊 Historique
         </button>
       </div>
-
-      <div class="login-foot">
-        <strong>Important :</strong> pour l’instant cette page envoie uniquement le contenu du chat dans 
-        <span>Firebase Realtime Database</span>. L’identification officielle par carte d’identité sera raccordée plus tard via DIGIY ID.
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="app">
-  <header>
-    <div class="brand">
-      <div class="brand-logo">💬</div>
-      <div>
-        <div class="brand-title">DIGIY CHAT</div>
-        <div class="brand-sub">Messagerie temps réel • Sénégal → Afrique</div>
-      </div>
-    </div>
-
-    <div class="status-box">
-      <div class="status-pill">
-        <span class="status-dot"></span>
-        <span id="statusText">Connecté à Firebase (lecture/écriture)</span>
-      </div>
-      <div class="room-label">
-        Salon : <span class="room-name" id="roomName">global</span>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <section class="chat-card">
-      <div class="chat-header">
-        <div>
-          <div class="chat-title">Conversation DIGIY</div>
-          <div class="chat-sub">
-            Messages temps réel. Utilisez un salon par partenaire (ex: <code>?room=astou</code>, <code>?room=lamine</code>).
-          </div>
-        </div>
-        <div class="user-mini" id="userMini">
-          Non connecté
-        </div>
-      </div>
-
-      <div class="chat-body">
-        <!-- Messages -->
-        <div class="messages-panel">
-          <div class="messages-list" id="messagesList">
-            <!-- messages dynamiques -->
-          </div>
-        </div>
-
-        <!-- Panneau latéral -->
-        <aside class="meta-panel">
-          <div class="meta-card">
-            <div class="meta-title">Infos salon</div>
-            <div class="meta-line">
-              ID : <span id="roomIdLabel">global</span>
-            </div>
-            <div class="meta-line">
-              Nombre de messages : <span id="msgCount">0</span>
-            </div>
-            <div class="meta-mini">
-              Pour créer un salon dédié : <br>
-              <code>?room=astou</code>, <code>?room=chez-baptiste</code>, etc.
-            </div>
-          </div>
-
-          <div class="meta-card">
-            <div class="meta-title">Mode actuel</div>
-            <div class="meta-line">
-              🔐 Règles : lecture publique, écriture contrôlée via règles Firebase.
-            </div>
-            <div class="meta-mini">
-              À brancher plus tard avec :<br>
-              <span class="tag">DIGIY ID</span>
-              <span class="tag">DIGIY PAY</span>
-              <span class="tag">DIGIY HUB</span>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <div class="chat-footer">
-        <div class="input-area">
-          <textarea id="messageInput" class="textarea" placeholder="Écrire un message… (Entrée = envoyer, Shift+Entrée = retour à la ligne)"></textarea>
-          <div class="hint">
-            👉 Identité actuelle : <span id="currentIdentity">Anonyme</span> • 
-            <button class="btn btn-ghost" style="padding:3px 8px;font-size:10px;" onclick="forceLogout()">Changer d’utilisateur</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">
-          Envoyer
-        </button>
+      <div class="commission-badge">
+        ✓ 0% de commission sur tous vos paiements
       </div>
     </section>
-  </main>
 
-  <footer>
-    <div>DIGIYLYFE • <span>DIGIY CHAT</span> — Bâti pour le terrain.</div>
-    <div>Data: Firebase Realtime Database — chemin <code>/chatRooms/{roomId}/messages</code>.</div>
-  </footer>
-</div>
+    <!-- PAYMENT METHODS -->
+    <section class="payment-methods">
+      <h2 class="section-title">Méthodes de paiement</h2>
+      <div class="methods-grid">
+        <div class="method-card wave" onclick="selectMethod('wave')">
+          <div class="method-icon">🌊</div>
+          <h3 class="method-name">Wave</h3>
+          <p class="method-desc">QR Code, Transfert direct, API intégrée</p>
+          <span class="method-badge">✓ Priorité #1</span>
+        </div>
 
-<!-- === DIGIY SERVICE BAR V2 (HTML) === -->
-<div id="digiyServicePanel" class="service-panel hidden">
-  <div class="service-panel-header">
-    <div class="service-panel-title">
-      <span class="icon">⚡</span> SUPER APP DIGIY
-    </div>
-    <div class="service-panel-sub">
-      Accès rapide à tes services depuis le chat.
+        <div class="method-card orange" onclick="selectMethod('orange')">
+          <div class="method-icon">🟧</div>
+          <h3 class="method-name">Orange Money</h3>
+          <p class="method-desc">USSD *144#, API, Transfert mobile</p>
+          <span class="method-badge">✓ Le plus répandu</span>
+        </div>
+
+        <div class="method-card free" onclick="selectMethod('free')">
+          <div class="method-icon">🟩</div>
+          <h3 class="method-name">Free Money</h3>
+          <p class="method-desc">Transfert direct entre utilisateurs Free</p>
+          <span class="method-badge">✓ Disponible</span>
+        </div>
+
+        <div class="method-card cash" onclick="selectMethod('cash')">
+          <div class="method-icon">💵</div>
+          <h3 class="method-name">Espèces</h3>
+          <p class="method-desc">Paiement cash, Reçu digital automatique</p>
+          <span class="method-badge">✓ Terrain</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSACTIONS -->
+    <section class="transactions">
+      <h2 class="section-title">Transactions récentes</h2>
+      <div id="transactionsList">
+        <div class="transaction-item">
+          <div class="transaction-info">
+            <div class="transaction-icon">🚗</div>
+            <div class="transaction-details">
+              <h4>Course DIGIY DRIVER</h4>
+              <p>Dakar → Saly • Wave</p>
+            </div>
+          </div>
+          <div class="transaction-amount positive">
+            <div class="amount">+15,000 FCFA</div>
+            <div class="date">Il y a 2h</div>
+          </div>
+        </div>
+
+        <div class="transaction-item">
+          <div class="transaction-info">
+            <div class="transaction-icon">🏠</div>
+            <div class="transaction-details">
+              <h4>Réservation DIGIY LOC</h4>
+              <p>Chez Baptiste • Orange Money</p>
+            </div>
+          </div>
+          <div class="transaction-amount positive">
+            <div class="amount">+45,000 FCFA</div>
+            <div class="date">Hier</div>
+          </div>
+        </div>
+
+        <div class="transaction-item">
+          <div class="transaction-info">
+            <div class="transaction-icon">🍽️</div>
+            <div class="transaction-details">
+              <h4>Commande DIGIY RESTO</h4>
+              <p>Le Baobab • Espèces</p>
+            </div>
+          </div>
+          <div class="transaction-amount negative">
+            <div class="amount">-8,500 FCFA</div>
+            <div class="date">Il y a 3j</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL RECHARGE -->
+  <div id="rechargeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">💰 Recharger</h3>
+        <button class="close-btn" onclick="closeModal('recharge')">✕</button>
+      </div>
+      <form onsubmit="processRecharge(event)">
+        <div class="form-group">
+          <label>Montant (FCFA)</label>
+          <input type="number" id="rechargeAmount" placeholder="Ex: 10000" required min="500">
+        </div>
+        <div class="form-group">
+          <label>Méthode de paiement</label>
+          <select id="rechargeMethod" required>
+            <option value="">Choisir...</option>
+            <option value="wave">Wave</option>
+            <option value="orange">Orange Money</option>
+            <option value="free">Free Money</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Numéro de téléphone</label>
+          <input type="tel" id="rechargePhone" placeholder="+221 77 XXX XX XX" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Confirmer la recharge
+        </button>
+        <div class="commission-badge">
+          ✓ Aucun frais • Vous recevez 100%
+        </div>
+      </form>
     </div>
   </div>
 
-  <div id="servicePanelList" class="service-panel-list">
-    <!-- Rempli en JS -->
+  <!-- MODAL TRANSFER -->
+  <div id="transferModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">💸 Envoyer de l'argent</h3>
+        <button class="close-btn" onclick="closeModal('transfer')">✕</button>
+      </div>
+      <form onsubmit="processTransfer(event)">
+        <div class="form-group">
+          <label>Montant (FCFA)</label>
+          <input type="number" id="transferAmount" placeholder="Ex: 5000" required min="100">
+        </div>
+        <div class="form-group">
+          <label>Destinataire (Téléphone ou ID DIGIY)</label>
+          <input type="text" id="transferRecipient" placeholder="+221 77 XXX XX XX" required>
+        </div>
+        <div class="form-group">
+          <label>Message (optionnel)</label>
+          <input type="text" id="transferMessage" placeholder="Merci pour...">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Envoyer l'argent
+        </button>
+        <div class="commission-badge">
+          ✓ 0% de commission • Transfer instantané
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
-<button id="digiyServiceFab" class="service-fab" type="button" onclick="toggleServicePanel()">
-  <span class="fab-icon">⚡</span>
-</button>
+  <script>
+    // STORAGE KEYS
+    const STORAGE_BALANCE = 'digiy_pay_balance';
+    const STORAGE_TRANSACTIONS = 'digiy_pay_transactions';
+    const STORAGE_USER = 'digiy_pay_user';
 
-<script>
-  // ===== CONFIG FIREBASE (même projet que ton écosystème) =====
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
-    authDomain: "digiylyfe-ecosystem.firebaseapp.com",
-    databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "digiylyfe-ecosystem",
-    storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
-    messagingSenderId: "1007962643384",
-    appId: "1:1007962643384:web:20d26881e87f0dc37d0d"
-  };
+    // LOAD DATA
+    let balance = parseInt(localStorage.getItem(STORAGE_BALANCE)) || 0;
+    let transactions = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS)) || [];
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // ===== CONST & STATE =====
-  const STORAGE_USER_KEY = "digiy_chat_user_v1";
-  const MAX_MESSAGES = 200;
-
-  let currentUser = null;
-  let roomId = "global";
-  let msgCounter = 0;
-
-  const loginOverlay = document.getElementById("loginOverlay");
-  const statusText = document.getElementById("statusText");
-  const messagesList = document.getElementById("messagesList");
-  const msgCountEl = document.getElementById("msgCount");
-  const roomNameEl = document.getElementById("roomName");
-  const roomIdLabelEl = document.getElementById("roomIdLabel");
-  const userMini = document.getElementById("userMini");
-  const currentIdentity = document.getElementById("currentIdentity");
-  const messageInput = document.getElementById("messageInput");
-  const sendBtn = document.getElementById("sendBtn");
-
-  // ===== UTILS =====
-  function parseRoomFromURL(){
-    try{
-      const params = new URLSearchParams(window.location.search);
-      const r = (params.get("room") || "global").trim().toLowerCase();
-      if(!r) return "global";
-      return r.replace(/[^a-z0-9\-_/]/gi,"-");
-    }catch(e){
-      return "global";
-    }
-  }
-
-  function formatTime(ts){
-    if(!ts) return "";
-    try{
-      const d = new Date(ts);
-      return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-    }catch(e){
-      return "";
-    }
-  }
-
-  function loadUserFromStorage(){
-    try{
-      const raw = localStorage.getItem(STORAGE_USER_KEY);
-      if(!raw) return null;
-      return JSON.parse(raw);
-    }catch(e){
-      console.error("Erreur lecture storage:",e);
-      return null;
-    }
-  }
-
-  function saveUserToStorage(user){
-    currentUser = user;
-    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
-  }
-
-  function updateIdentityUI(){
-    if(currentUser){
-      const label = `${currentUser.name || "Inconnu"} (${currentUser.phone || "?"})`;
-      currentIdentity.textContent = label;
-      userMini.textContent = label;
-    }else{
-      currentIdentity.textContent = "Anonyme (pas de DIGIY ID)";
-      userMini.textContent = "Non connecté";
-    }
-  }
-
-  // ===== LOGIN HANDLERS =====
-  function handleLogin(){
-    const nameInput = document.getElementById("loginName");
-    const phoneInput = document.getElementById("loginPhone");
-    const roleSelect = document.getElementById("loginRole");
-
-    const name = (nameInput.value || "").trim();
-    const phone = (phoneInput.value || "").trim();
-    const role = (roleSelect.value || "").trim();
-
-    if(!name || !phone || !role){
-      alert("Merci de remplir tous les champs pour utiliser DIGIY CHAT.");
-      return;
+    // UPDATE UI
+    function updateBalance() {
+      document.getElementById('balance').textContent = formatMoney(balance);
+      localStorage.setItem(STORAGE_BALANCE, balance);
     }
 
-    const user = {
-      name,
-      phone,
-      role,
-      createdAt: new Date().toISOString()
-    };
-
-    saveUserToStorage(user);
-    loginOverlay.classList.add("hidden");
-    updateIdentityUI();
-  }
-
-  function quickDemoUser(){
-    const user = {
-      name: "Mamadou Démo",
-      phone: "+221 77 000 00 00",
-      role: "client",
-      createdAt: new Date().toISOString()
-    };
-    saveUserToStorage(user);
-    loginOverlay.classList.add("hidden");
-    updateIdentityUI();
-  }
-
-  function forceLogout(){
-    if(!confirm("Changer d'utilisateur DIGIY CHAT ?")){
-      return;
-    }
-    localStorage.removeItem(STORAGE_USER_KEY);
-    currentUser = null;
-    updateIdentityUI();
-    loginOverlay.classList.remove("hidden");
-  }
-
-  // ===== RENDER MESSAGE =====
-  function renderMessage(msg){
-    const isMe = currentUser && msg.senderPhone && currentUser.phone && (String(msg.senderPhone).trim() === String(currentUser.phone).trim());
-
-    const row = document.createElement("div");
-    row.className = "msg-row" + (isMe ? " me" : "");
-
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble " + (isMe ? "msg-me" : "msg-other");
-
-    const textDiv = document.createElement("div");
-    textDiv.textContent = msg.text || "";
-    bubble.appendChild(textDiv);
-
-    const metaDiv = document.createElement("div");
-    metaDiv.className = "msg-meta";
-
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "msg-name";
-    nameSpan.textContent = msg.senderName || "—";
-
-    const timeSpan = document.createElement("span");
-    timeSpan.className = "msg-time";
-    timeSpan.textContent = formatTime(msg.createdAt);
-
-    metaDiv.appendChild(nameSpan);
-    metaDiv.appendChild(timeSpan);
-
-    bubble.appendChild(metaDiv);
-    row.appendChild(bubble);
-
-    messagesList.appendChild(row);
-    messagesList.scrollTop = messagesList.scrollHeight || 999999;
-  }
-
-  // ===== CHAT LOGIC =====
-  function sendMessage(){
-    const text = (messageInput.value || "").trim();
-    if(!text){
-      return;
-    }
-    if(!currentUser){
-      alert("Merci de vous identifier avant d'envoyer un message.");
-      return;
+    function formatMoney(amount) {
+      return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
     }
 
-    sendBtn.disabled = true;
+    function openModal(type) {
+      document.getElementById(type + 'Modal').classList.add('active');
+    }
 
-    const payload = {
-      text,
-      senderName: currentUser.name || "",
-      senderPhone: currentUser.phone || "",
-      senderRole: currentUser.role || "",
-      createdAt: Date.now()
-    };
+    function closeModal(type) {
+      document.getElementById(type + 'Modal').classList.remove('active');
+    }
 
-    const ref = db.ref("chatRooms/" + roomId + "/messages");
-    ref.push(payload)
-      .then(() => {
-        messageInput.value = "";
-        sendBtn.disabled = false;
-      })
-      .catch(err => {
-        console.error("Erreur envoi message:",err);
-        alert("Erreur d'envoi. Vérifie la connexion ou les règles Firebase.");
-        sendBtn.disabled = false;
-      });
-  }
+    function selectMethod(method) {
+      alert(`Méthode sélectionnée: ${method}\n\nDans la version complète, cela ouvrira le processus de paiement ${method}.`);
+    }
 
-  function initChatListener(){
-    msgCounter = 0;
-    msgCountEl.textContent = "0";
-    messagesList.innerHTML = "";
-
-    const ref = db.ref("chatRooms/" + roomId + "/messages").limitToLast(MAX_MESSAGES);
-
-    ref.off(); // sécurité si rappel
-    ref.on("child_added", snap => {
-      const val = snap.val() || {};
-      msgCounter++;
-      msgCountEl.textContent = String(msgCounter);
-      renderMessage(val);
-    }, err => {
-      console.error("Erreur listener:",err);
-      statusText.textContent = "Erreur écoute Firebase";
-    });
-  }
-
-  // ===== EVENTS =====
-  messageInput.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" && !e.shiftKey){
+    function processRecharge(e) {
       e.preventDefault();
-      sendMessage();
-    }
-  });
+      const amount = parseInt(document.getElementById('rechargeAmount').value);
+      const method = document.getElementById('rechargeMethod').value;
+      const phone = document.getElementById('rechargePhone').value;
 
-  // ===== INIT CHAT =====
-  document.addEventListener("DOMContentLoaded", () => {
-    try{
-      roomId = parseRoomFromURL();
-      roomNameEl.textContent = roomId;
-      roomIdLabelEl.textContent = roomId;
-    }catch(e){
-      console.error(e);
-    }
+      // Simulate payment
+      balance += amount;
+      updateBalance();
 
-    currentUser = loadUserFromStorage();
-    if(currentUser){
-      loginOverlay.classList.add("hidden");
-    }
-    updateIdentityUI();
+      // Add transaction
+      transactions.unshift({
+        type: 'recharge',
+        amount: amount,
+        method: method,
+        phone: phone,
+        date: new Date().toISOString(),
+        status: 'completed'
+      });
+      localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(transactions));
 
-    statusText.textContent = "Connecté à Firebase (lecture seule + écriture salon '" + roomId + "')";
-    initChatListener();
-  });
-</script>
-
-<script>
-  // === CONFIG DES SERVICES DIGIY AFFICHÉS DANS LE PANNEAU ===
-  const DIGIY_SERVICES = [
-    {
-      id: "hub",
-      label: "DIGIY HUB",
-      emoji: "⚡",
-      description: "Point d’entrée unique de l’écosystème DIGIY.",
-      href: "https://digiylyfe.com/hub/"
-    },
-    {
-      id: "driver",
-      label: "DIGIY DRIVER",
-      emoji: "🚗",
-      description: "Commander une course AIBD, Dakar, Saly…",
-      href: "https://beauville.github.io/digiy-driver-client/"
-    },
-    {
-      id: "loc",
-      label: "DIGIY LOC",
-      emoji: "🏡",
-      description: "Réservation d’hébergements sans commission.",
-      href: "https://beauville.github.io/chez-baptiste-digiy-loc/"
-    },
-    {
-      id: "pos",
-      label: "DIGIY POS",
-      emoji: "🧾",
-      description: "Caisse & vitrine boutiques partenaires.",
-      href: "https://beauville.github.io/Caisse-officielle-ASTOU/"
-    },
-    {
-      id: "market",
-      label: "DIGIY MARKET",
-      emoji: "🛒",
-      description: "Annonces locales & bonnes affaires terrain.",
-      href: "https://digiylyfe.com/digiy-bonne-affaire/"
-    },
-    {
-      id: "jobs",
-      label: "DIGIY JOBS",
-      emoji: "💼",
-      description: "Offres & candidatures pour le terrain.",
-      href: "https://digiylyfe.com/digiy-jobs/"
-    },
-    {
-      id: "inscription",
-      label: "INSCRIPTION PARTENAIRE",
-      emoji: "📝",
-      description: "Créer un compte DIGIYLYFE complet.",
-      href: "https://beauville.github.io/portail-inscription/"
-    }
-  ];
-
-  const servicePanel = document.getElementById("digiyServicePanel");
-  const serviceFab = document.getElementById("digiyServiceFab");
-  const serviceList = document.getElementById("servicePanelList");
-
-  // === OUVRIR / FERMER LE PANNEAU ===
-  function toggleServicePanel() {
-    if (!servicePanel) return;
-    servicePanel.classList.toggle("hidden");
-    if (serviceFab) {
-      serviceFab.classList.toggle("open");
-    }
-  }
-
-  // === OUVRIR UN SERVICE DANS UN NOUVEL ONGLET ===
-  function openDigiyService(id) {
-    const svc = DIGIY_SERVICES.find(s => s.id === id);
-    if (!svc || !svc.href) return;
-    window.open(svc.href, "_blank", "noopener");
-  }
-
-  // === ENVOYER UNE QUESTION PRÉ-REMPLIE DANS LE CHAT ===
-  function sendHelpMessage(serviceId) {
-    const svc = DIGIY_SERVICES.find(s => s.id === serviceId);
-    const input = document.getElementById("messageInput");
-
-    if (!input) {
-      console.warn("messageInput introuvable, je ne peux pas pré-remplir le chat.");
-      return;
+      alert(`✅ Recharge de ${formatMoney(amount)} réussie!\n\nMéthode: ${method}\nNuméro: ${phone}\n\n💰 Nouveau solde: ${formatMoney(balance)}`);
+      closeModal('recharge');
+      e.target.reset();
     }
 
-    const base = "Bonjour DIGIY, j’ai une question sur : ";
-    input.value = svc
-      ? `${base}${svc.label} (${svc.href})`
-      : base;
+    function processTransfer(e) {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById('transferAmount').value);
+      const recipient = document.getElementById('transferRecipient').value;
+      const message = document.getElementById('transferMessage').value;
 
-    input.focus();
-    toggleServicePanel();
-  }
+      if (amount > balance) {
+        alert('❌ Solde insuffisant!');
+        return;
+      }
 
-  // === RENDU DES CARTES DANS LE PANNEAU ===
-  function renderServicePanel() {
-    if (!serviceList) return;
-    serviceList.innerHTML = "";
+      // Process transfer
+      balance -= amount;
+      updateBalance();
 
-    DIGIY_SERVICES.forEach(svc => {
-      const item = document.createElement("div");
-      item.className = "service-item";
+      // Add transaction
+      transactions.unshift({
+        type: 'transfer',
+        amount: -amount,
+        recipient: recipient,
+        message: message,
+        date: new Date().toISOString(),
+        status: 'completed'
+      });
+      localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(transactions));
 
-      item.innerHTML = `
-        <div class="service-item-main">
-          <div class="service-item-title">
-            <span class="icon">${svc.emoji}</span>
-            <span class="label">${svc.label}</span>
-          </div>
-          <div class="service-item-desc">
-            ${svc.description}
-          </div>
-        </div>
-        <div class="service-item-actions">
-          <button type="button" class="service-btn primary"
-            onclick="openDigiyService('${svc.id}')">
-            Ouvrir
-          </button>
-          <button type="button" class="service-btn ghost"
-            onclick="sendHelpMessage('${svc.id}')">
-            Poser une question ici
-          </button>
-        </div>
-      `;
+      alert(`✅ Transfer de ${formatMoney(amount)} effectué!\n\nDestinataire: ${recipient}\nMessage: ${message || 'Aucun'}\n\n💰 Nouveau solde: ${formatMoney(balance)}`);
+      closeModal('transfer');
+      e.target.reset();
+    }
 
-      serviceList.appendChild(item);
-    });
-  }
+    function viewHistory() {
+      if (transactions.length === 0) {
+        alert('Aucune transaction pour le moment.');
+        return;
+      }
 
-  // === INIT AU CHARGEMENT ===
-  document.addEventListener("DOMContentLoaded", () => {
-    renderServicePanel();
-  });
-</script>
+      let history = '📊 HISTORIQUE DES TRANSACTIONS\n\n';
+      transactions.slice(0, 10).forEach(tx => {
+        const date = new Date(tx.date).toLocaleDateString('fr-FR');
+        history += `${tx.type === 'recharge' ? '💰' : '💸'} ${tx.type.toUpperCase()}\n`;
+        history += `Montant: ${formatMoney(Math.abs(tx.amount))}\n`;
+        history += `Date: ${date}\n`;
+        if (tx.recipient) history += `Destinataire: ${tx.recipient}\n`;
+        history += '\n';
+      });
+
+      alert(history);
+    }
+
+    // Initialize
+    updateBalance();
+
+    console.log(`
+🔥 DIGIY PAY LOADED! 💎
+
+Pierre par pierre, on construit l'écosystème!
+L'Afrique enracinée, connectée au monde.
+
+∞ 0% Commission • 100% Liberté ∞
+    `);
+  </script>
 </body>
 </html>
