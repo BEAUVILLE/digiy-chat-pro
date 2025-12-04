@@ -1,835 +1,846 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIGIY PAY — Wallet & Paiements 0% Commission</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <meta charset="utf-8">
+  <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
+  <meta name="theme-color" content="#020617">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    :root {
-      --bg-dark: #0A0E1A;
-      --bg-soft: #0F1419;
-      --card: #1A1F2E;
-      --accent: #FF6B35;
-      --secondary: #00B4D8;
-      --success: #06D6A0;
-      --warning: #FFB800;
-      --danger: #EF4444;
-      --ink: #FFFFFF;
-      --ink-soft: #E5E7EB;
-      --muted: #9CA3AF;
-      --border: rgba(255, 255, 255, 0.08);
+    :root{
+      --bg:#020617;
+      --bg-soft:#030712;
+      --card:#020617;
+      --card-soft:#030712;
+      --accent:#f97316; /* orange vif */
+      --accent-soft:#fed7aa;
+      --accent-strong:#ea580c;
+      --accent-whatsapp:#22c55e;
+      --accent-call:#0ea5e9;
+      --ink:#f9fafb;
+      --ink-soft:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --danger:#ef4444;
+      --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-pill:999px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
 
-    body {
-      font-family: 'Manrope', sans-serif;
-      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-soft) 100%);
-      color: var(--ink);
-      min-height: 100vh;
-      padding: 2rem;
+    html{
+      font-size:16px;
     }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
+    body{
+      min-height:100vh;
+      font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
+      color:var(--ink);
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      padding:1.5rem;
+    }
+
+    @media (max-width:768px){
+      body{
+        padding:0.75rem;
+      }
+    }
+
+    .app{
+      width:100%;
+      max-width:1200px;
+      background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
+      border-radius:32px;
+      border:1px solid rgba(148,163,184,0.2);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .app::before{
+      content:'';
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 0 0,rgba(248,113,113,0.08),transparent 55%),
+        radial-gradient(circle at 100% 0,rgba(56,189,248,0.12),transparent 55%);
+      opacity:0.7;
+      pointer-events:none;
     }
 
     /* HEADER */
-    header {
-      background: rgba(26, 31, 46, 0.6);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      padding: 1.5rem 2rem;
-      margin-bottom: 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+    .header{
+      position:relative;
+      z-index:1;
+      padding:1.25rem 1.75rem;
+      border-bottom:1px solid rgba(148,163,184,0.25);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:0.9rem;
     }
 
-    .brand-logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent), #E85A28);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      font-weight: 900;
-      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+    .brand-logo{
+      width:44px;
+      height:44px;
+      border-radius:18px;
+      background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#0b1120;
+      font-family:'Outfit',sans-serif;
+      font-weight:900;
+      font-size:1.5rem;
+      box-shadow:0 16px 40px rgba(248,113,22,0.7);
+      position:relative;
+      overflow:hidden;
     }
 
-    .brand-text h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.75rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.25rem;
+    .brand-logo::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.5),transparent 55%);
+      opacity:0.7;
+      mix-blend-mode:screen;
     }
 
-    .brand-text p {
-      font-size: 0.875rem;
-      color: var(--muted);
-      font-weight: 600;
+    .brand-text-title{
+      font-family:'Outfit',sans-serif;
+      font-size:1.4rem;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      background:linear-gradient(135deg,#f97316,#fed7aa);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 0.75rem 1.25rem;
-      border-radius: 100px;
-      border: 1px solid var(--border);
+    .brand-text-sub{
+      font-size:0.8rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      font-weight:600;
     }
 
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--secondary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.125rem;
+    .header-right{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
     }
 
-    .user-details h3 {
-      font-size: 0.9375rem;
-      font-weight: 700;
-      margin-bottom: 0.125rem;
+    .pill{
+      padding:0.4rem 0.9rem;
+      border-radius:var(--radius-pill);
+      border:1px solid rgba(148,163,184,0.5);
+      font-size:0.78rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--ink-soft);
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
+      background:rgba(15,23,42,0.85);
     }
 
-    .user-details p {
-      font-size: 0.8125rem;
-      color: var(--muted);
+    .pill span.icon{
+      font-size:0.9rem;
     }
 
-    /* BALANCE CARD */
-    .balance-section {
-      background: linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(37, 41, 56, 0.6) 100%);
-      backdrop-filter: blur(20px);
-      border-radius: 28px;
-      border: 1px solid var(--border);
-      padding: 2.5rem;
-      margin-bottom: 2rem;
-      position: relative;
-      overflow: hidden;
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent-whatsapp);
+      box-shadow:0 0 0 6px rgba(34,197,94,0.3);
     }
 
-    .balance-section::before {
-      content: '💰';
-      position: absolute;
-      font-size: 12rem;
-      top: -3rem;
-      right: -3rem;
-      opacity: 0.03;
-    }
-
-    .balance-label {
-      font-size: 0.9375rem;
-      color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .balance-amount {
-      font-family: 'Outfit', sans-serif;
-      font-size: 4rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 1.5rem;
-      line-height: 1;
-    }
-
-    .balance-actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 0.875rem 1.75rem;
-      border-radius: 100px;
-      border: none;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.9375rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #E85A28);
-      color: var(--ink);
-      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
-    }
-
-    .btn-secondary {
-      background: rgba(15, 23, 42, 0.6);
-      color: var(--ink-soft);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      background: rgba(255, 107, 53, 0.1);
-    }
-
-    /* PAYMENT METHODS */
-    .payment-methods {
-      background: linear-gradient(135deg, rgba(26, 31, 46, 0.7), rgba(15, 23, 42, 0.8));
-      backdrop-filter: blur(20px);
-      border-radius: 28px;
-      border: 1px solid var(--border);
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .section-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-      color: var(--ink);
-    }
-
-    .methods-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-    }
-
-    .method-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.75rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .method-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .method-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      background: rgba(26, 31, 46, 0.6);
-      border: 1px solid var(--border);
-    }
-
-    .method-card.wave .method-icon {
-      background: linear-gradient(135deg, #00B4D8, #0077B6);
-    }
-
-    .method-card.orange .method-icon {
-      background: linear-gradient(135deg, #FF6B35, #F97316);
-    }
-
-    .method-card.free .method-icon {
-      background: linear-gradient(135deg, #06D6A0, #059669);
-    }
-
-    .method-card.cash .method-icon {
-      background: linear-gradient(135deg, #FFB800, #F59E0B);
-    }
-
-    .method-name {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      color: var(--ink);
-    }
-
-    .method-desc {
-      font-size: 0.875rem;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-bottom: 1rem;
-    }
-
-    .method-badge {
-      display: inline-block;
-      padding: 0.375rem 0.875rem;
-      background: rgba(6, 214, 160, 0.1);
-      border: 1px solid var(--success);
-      color: var(--success);
-      border-radius: 100px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    /* TRANSACTIONS */
-    .transactions {
-      background: linear-gradient(135deg, rgba(26, 31, 46, 0.7), rgba(15, 23, 42, 0.8));
-      backdrop-filter: blur(20px);
-      border-radius: 28px;
-      border: 1px solid var(--border);
-      padding: 2rem;
-    }
-
-    .transaction-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.25rem;
-      background: rgba(15, 23, 42, 0.4);
-      border-radius: 16px;
-      margin-bottom: 1rem;
-      border: 1px solid var(--border);
-      transition: all 0.3s ease;
-    }
-
-    .transaction-item:hover {
-      background: rgba(15, 23, 42, 0.6);
-      border-color: var(--accent);
-    }
-
-    .transaction-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .transaction-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      background: rgba(26, 31, 46, 0.8);
-    }
-
-    .transaction-details h4 {
-      font-size: 0.9375rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      color: var(--ink);
-    }
-
-    .transaction-details p {
-      font-size: 0.8125rem;
-      color: var(--muted);
-    }
-
-    .transaction-amount {
-      text-align: right;
-    }
-
-    .transaction-amount .amount {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.125rem;
-      font-weight: 800;
-      margin-bottom: 0.25rem;
-    }
-
-    .transaction-amount.positive .amount {
-      color: var(--success);
-    }
-
-    .transaction-amount.negative .amount {
-      color: var(--danger);
-    }
-
-    .transaction-amount .date {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    /* MODAL */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 14, 26, 0.95);
-      backdrop-filter: blur(20px);
-      z-index: 1000;
-      padding: 2rem;
-      overflow-y: auto;
-    }
-
-    .modal.active {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background: linear-gradient(135deg, rgba(26, 31, 46, 0.95), rgba(15, 23, 42, 0.98));
-      border-radius: 28px;
-      border: 1px solid var(--border);
-      padding: 2.5rem;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .modal-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--ink);
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .close-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--accent);
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--ink-soft);
-      margin-bottom: 0.5rem;
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 0.875rem 1.25rem;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--ink);
-      font-size: 0.9375rem;
-      font-family: 'Manrope', sans-serif;
-      transition: all 0.3s ease;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
-    }
-
-    .commission-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.25rem;
-      background: rgba(6, 214, 160, 0.1);
-      border: 1px solid var(--success);
-      border-radius: 12px;
-      font-weight: 700;
-      color: var(--success);
-      margin-top: 1rem;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 1rem;
+    @media (max-width:768px){
+      .header{
+        flex-direction:column;
+        align-items:flex-start;
       }
-
-      header {
-        flex-direction: column;
-        align-items: flex-start;
+      .header-right{
+        width:100%;
+        justify-content:space-between;
       }
+    }
 
-      .balance-amount {
-        font-size: 3rem;
+    /* LAYOUT */
+    .layout{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:minmax(0,0.9fr) minmax(0,1.4fr);
+      min-height:520px;
+      max-height:76vh;
+    }
+
+    @media (max-width:900px){
+      .layout{
+        grid-template-columns:1fr;
+        max-height:none;
+        height:auto;
       }
+    }
 
-      .methods-grid {
-        grid-template-columns: 1fr;
+    /* SIDEBAR */
+    .sidebar{
+      border-right:1px solid rgba(30,64,175,0.4);
+      background:radial-gradient(circle at 0 0,#020617 0,#020617 50%,#020617 100%);
+      display:flex;
+      flex-direction:column;
+    }
+
+    @media (max-width:900px){
+      .sidebar{
+        max-height:280px;
       }
+    }
 
-      .balance-actions {
-        flex-direction: column;
-        width: 100%;
+    .sidebar-header{
+      padding:1rem 1.2rem 0.25rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:0.75rem;
+    }
+
+    .sidebar-title{
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+
+    .badge-counter{
+      padding:0.1rem 0.55rem;
+      border-radius:999px;
+      border:1px solid rgba(248,250,252,0.3);
+      font-size:0.7rem;
+      font-weight:700;
+      color:var(--accent-soft);
+      background:rgba(15,23,42,0.7);
+    }
+
+    .filter-chips{
+      padding:0.2rem 1.2rem 0.8rem;
+      display:flex;
+      gap:0.4rem;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      padding:0.25rem 0.7rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.45);
+      font-size:0.75rem;
+      color:var(--muted);
+      background:rgba(15,23,42,0.8);
+      cursor:default;
+    }
+
+    .chip.chip-active{
+      border-color:var(--accent);
+      background:rgba(248,113,22,0.16);
+      color:var(--accent-soft);
+      font-weight:600;
+    }
+
+    .chat-list{
+      flex:1;
+      overflow-y:auto;
+      padding:0.4rem 0.6rem 0.8rem;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(148,163,184,0.6) transparent;
+    }
+
+    .chat-list::-webkit-scrollbar{
+      width:6px;
+    }
+
+    .chat-list::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.6);
+      border-radius:999px;
+    }
+
+    .chat-item{
+      display:flex;
+      gap:0.65rem;
+      padding:0.55rem 0.6rem;
+      border-radius:18px;
+      cursor:default;
+      transition:background 0.2s ease,transform 0.15s ease,border 0.2s ease;
+      border:1px solid transparent;
+    }
+
+    .chat-item:hover{
+      background:rgba(15,23,42,0.9);
+      transform:translateY(-1px);
+      border-color:rgba(31,41,55,0.9);
+    }
+
+    .chat-item.chat-active{
+      background:radial-gradient(circle at 0 0,rgba(248,113,22,0.16),rgba(15,23,42,0.95));
+      border-color:rgba(248,113,22,0.7);
+      box-shadow:0 12px 30px rgba(15,23,42,0.9);
+    }
+
+    .chat-avatar{
+      width:36px;
+      height:36px;
+      border-radius:14px;
+      background:radial-gradient(circle at 0 0,#f97316,#facc15);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.1rem;
+      font-weight:800;
+      color:#0b1120;
+      flex-shrink:0;
+    }
+
+    .chat-meta{
+      flex:1;
+      min-width:0;
+    }
+
+    .chat-row-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:0.15rem;
+    }
+
+    .chat-name{
+      font-size:0.88rem;
+      font-weight:700;
+      color:var(--ink);
+    }
+
+    .chat-time{
+      font-size:0.72rem;
+      color:var(--muted);
+    }
+
+    .chat-snippet{
+      font-size:0.8rem;
+      color:var(--ink-soft);
+      opacity:0.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:200px;
+    }
+
+    .chat-tags{
+      margin-top:0.15rem;
+      display:flex;
+      gap:0.35rem;
+      flex-wrap:wrap;
+    }
+
+    .tag{
+      font-size:0.68rem;
+      padding:0.1rem 0.4rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      color:var(--muted);
+    }
+
+    .tag.tag-new{
+      border-color:var(--accent);
+      color:var(--accent-soft);
+      background:rgba(248,113,22,0.1);
+      font-weight:600;
+    }
+
+    .tag.tag-wapp{
+      border-color:var(--accent-whatsapp);
+      color:var(--accent-whatsapp);
+      background:rgba(22,163,74,0.12);
+      font-weight:600;
+    }
+
+    .tag.tag-today{
+      border-color:rgba(56,189,248,0.7);
+      color:#7dd3fc;
+      background:rgba(8,47,73,0.8);
+      font-weight:600;
+    }
+
+    /* MAIN CHAT PANEL */
+    .main{
+      background:radial-gradient(circle at top,#020617,#020617 55%);
+      display:flex;
+      flex-direction:column;
+      position:relative;
+    }
+
+    .main-header{
+      padding:1rem 1.5rem 0.5rem;
+      border-bottom:1px solid rgba(30,64,175,0.5);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+    }
+
+    .thread-info{
+      display:flex;
+      flex-direction:column;
+      gap:0.2rem;
+    }
+
+    .thread-title{
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
+      font-weight:600;
+    }
+
+    .thread-title span.dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent);
+      box-shadow:0 0 0 5px rgba(248,113,22,0.5);
+    }
+
+    .thread-main{
+      font-size:1.02rem;
+      font-weight:700;
+      color:var(--ink);
+      display:flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+
+    .thread-meta{
+      font-size:0.8rem;
+      color:var(--muted);
+    }
+
+    .thread-actions{
+      display:flex;
+      gap:0.5rem;
+      flex-wrap:wrap;
+    }
+
+    .btn-sm{
+      padding:0.3rem 0.7rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      color:var(--ink-soft);
+      font-size:0.75rem;
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+    }
+
+    .btn-sm-whatsapp{
+      border-color:var(--accent-whatsapp);
+      color:var(--accent-soft);
+      background:rgba(22,163,74,0.16);
+      text-decoration:none;
+    }
+
+    .btn-sm-call{
+      border-color:var(--accent-call);
+      color:#bae6fd;
+      background:rgba(12,74,110,0.85);
+      text-decoration:none;
+    }
+
+    /* MESSAGES */
+    .messages{
+      flex:1;
+      padding:1.1rem 1.5rem;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(148,163,184,0.7) transparent;
+    }
+
+    .messages::-webkit-scrollbar{
+      width:6px;
+    }
+    .messages::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.7);
+      border-radius:999px;
+    }
+
+    .msg-row{
+      display:flex;
+      margin-bottom:0.1rem;
+    }
+
+    .msg-row.client{
+      justify-content:flex-start;
+    }
+
+    .msg-row.pro{
+      justify-content:flex-end;
+    }
+
+    .msg{
+      max-width:75%;
+      padding:0.7rem 0.9rem;
+      border-radius:18px;
+      font-size:0.9rem;
+      line-height:1.5;
+      position:relative;
+    }
+
+    .msg.client{
+      background:rgba(15,23,42,0.95);
+      border:1px solid rgba(51,65,85,0.9);
+      color:var(--ink-soft);
+      border-bottom-left-radius:4px;
+    }
+
+    .msg.pro{
+      background:linear-gradient(135deg,#f97316,#ea580c);
+      color:#0b1120;
+      border-bottom-right-radius:4px;
+      font-weight:500;
+    }
+
+    .msg-meta{
+      font-size:0.7rem;
+      color:var(--muted);
+      margin:0.15rem 0.25rem 0.35rem;
+    }
+
+    .msg-meta.right{
+      text-align:right;
+    }
+
+    .hint-banner{
+      margin-top:0.4rem;
+      padding:0.6rem 0.8rem;
+      border-radius:14px;
+      background:rgba(15,23,42,0.95);
+      border:1px dashed rgba(148,163,184,0.6);
+      font-size:0.78rem;
+      color:var(--muted);
+      display:flex;
+      align-items:flex-start;
+      gap:0.45rem;
+    }
+
+    .hint-banner span.icon{
+      font-size:0.9rem;
+      margin-top:0.05rem;
+    }
+
+    /* INPUT BAR (FAKE) */
+    .input-bar{
+      padding:0.8rem 1.2rem 1.1rem;
+      border-top:1px solid rgba(30,64,175,0.5);
+      display:flex;
+      gap:0.6rem;
+      align-items:center;
+      background:rgba(2,6,23,0.95);
+    }
+
+    .input-fake{
+      flex:1;
+      border-radius:999px;
+      background:rgba(15,23,42,0.95);
+      border:1px solid rgba(51,65,85,0.9);
+      padding:0.6rem 0.9rem;
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      color:var(--muted);
+      font-size:0.85rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .input-dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--muted);
+    }
+
+    .input-actions{
+      display:flex;
+      gap:0.4rem;
+    }
+
+    .btn-cta-mini{
+      border-radius:999px;
+      padding:0.5rem 0.85rem;
+      font-size:0.8rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+      border:none;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .btn-cta-wa{
+      background:var(--accent-whatsapp);
+      color:#022c22;
+    }
+
+    .btn-cta-call{
+      background:var(--accent-call);
+      color:#0b1120;
+    }
+
+    @media (max-width:768px){
+      .messages{
+        padding:0.9rem 1rem;
       }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
+      .main-header{
+        padding:0.8rem 1rem 0.4rem;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .thread-actions{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .input-bar{
+        padding:0.7rem 0.8rem 0.9rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- HEADER -->
-    <header>
-      <div class="brand">
-        <div class="brand-logo">💳</div>
-        <div class="brand-text">
-          <h1>DIGIY PAY</h1>
-          <p>Wallet & Paiements • 0% Commission</p>
-        </div>
+
+<div class="app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-logo">C</div>
+      <div>
+        <div class="brand-text-title">DIGIY PRO CHAT</div>
+        <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
       </div>
-      <div class="user-info">
-        <div class="user-avatar">JB</div>
-        <div class="user-details">
-          <h3 id="userName">JB BAPT</h3>
-          <p id="userPhone">+221 77 134 28 89</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- BALANCE SECTION -->
-    <section class="balance-section">
-      <div class="balance-label">Solde disponible</div>
-      <div class="balance-amount" id="balance">0 FCFA</div>
-      <div class="balance-actions">
-        <button class="btn btn-primary" onclick="openModal('recharge')">
-          💰 Recharger
-        </button>
-        <button class="btn btn-primary" onclick="openModal('transfer')">
-          💸 Envoyer
-        </button>
-        <button class="btn btn-secondary" onclick="openModal('withdraw')">
-          🏦 Retirer
-        </button>
-        <button class="btn btn-secondary" onclick="viewHistory()">
-          📊 Historique
-        </button>
-      </div>
-      <div class="commission-badge">
-        ✓ 0% de commission sur tous vos paiements
-      </div>
-    </section>
-
-    <!-- PAYMENT METHODS -->
-    <section class="payment-methods">
-      <h2 class="section-title">Méthodes de paiement</h2>
-      <div class="methods-grid">
-        <div class="method-card wave" onclick="selectMethod('wave')">
-          <div class="method-icon">🌊</div>
-          <h3 class="method-name">Wave</h3>
-          <p class="method-desc">QR Code, Transfert direct, API intégrée</p>
-          <span class="method-badge">✓ Priorité #1</span>
-        </div>
-
-        <div class="method-card orange" onclick="selectMethod('orange')">
-          <div class="method-icon">🟧</div>
-          <h3 class="method-name">Orange Money</h3>
-          <p class="method-desc">USSD *144#, API, Transfert mobile</p>
-          <span class="method-badge">✓ Le plus répandu</span>
-        </div>
-
-        <div class="method-card free" onclick="selectMethod('free')">
-          <div class="method-icon">🟩</div>
-          <h3 class="method-name">Free Money</h3>
-          <p class="method-desc">Transfert direct entre utilisateurs Free</p>
-          <span class="method-badge">✓ Disponible</span>
-        </div>
-
-        <div class="method-card cash" onclick="selectMethod('cash')">
-          <div class="method-icon">💵</div>
-          <h3 class="method-name">Espèces</h3>
-          <p class="method-desc">Paiement cash, Reçu digital automatique</p>
-          <span class="method-badge">✓ Terrain</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- TRANSACTIONS -->
-    <section class="transactions">
-      <h2 class="section-title">Transactions récentes</h2>
-      <div id="transactionsList">
-        <div class="transaction-item">
-          <div class="transaction-info">
-            <div class="transaction-icon">🚗</div>
-            <div class="transaction-details">
-              <h4>Course DIGIY DRIVER</h4>
-              <p>Dakar → Saly • Wave</p>
-            </div>
-          </div>
-          <div class="transaction-amount positive">
-            <div class="amount">+15,000 FCFA</div>
-            <div class="date">Il y a 2h</div>
-          </div>
-        </div>
-
-        <div class="transaction-item">
-          <div class="transaction-info">
-            <div class="transaction-icon">🏠</div>
-            <div class="transaction-details">
-              <h4>Réservation DIGIY LOC</h4>
-              <p>Chez Baptiste • Orange Money</p>
-            </div>
-          </div>
-          <div class="transaction-amount positive">
-            <div class="amount">+45,000 FCFA</div>
-            <div class="date">Hier</div>
-          </div>
-        </div>
-
-        <div class="transaction-item">
-          <div class="transaction-info">
-            <div class="transaction-icon">🍽️</div>
-            <div class="transaction-details">
-              <h4>Commande DIGIY RESTO</h4>
-              <p>Le Baobab • Espèces</p>
-            </div>
-          </div>
-          <div class="transaction-amount negative">
-            <div class="amount">-8,500 FCFA</div>
-            <div class="date">Il y a 3j</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- MODAL RECHARGE -->
-  <div id="rechargeModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">💰 Recharger</h3>
-        <button class="close-btn" onclick="closeModal('recharge')">✕</button>
-      </div>
-      <form onsubmit="processRecharge(event)">
-        <div class="form-group">
-          <label>Montant (FCFA)</label>
-          <input type="number" id="rechargeAmount" placeholder="Ex: 10000" required min="500">
-        </div>
-        <div class="form-group">
-          <label>Méthode de paiement</label>
-          <select id="rechargeMethod" required>
-            <option value="">Choisir...</option>
-            <option value="wave">Wave</option>
-            <option value="orange">Orange Money</option>
-            <option value="free">Free Money</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Numéro de téléphone</label>
-          <input type="tel" id="rechargePhone" placeholder="+221 77 XXX XX XX" required>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">
-          Confirmer la recharge
-        </button>
-        <div class="commission-badge">
-          ✓ Aucun frais • Vous recevez 100%
-        </div>
-      </form>
     </div>
-  </div>
-
-  <!-- MODAL TRANSFER -->
-  <div id="transferModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">💸 Envoyer de l'argent</h3>
-        <button class="close-btn" onclick="closeModal('transfer')">✕</button>
+    <div class="header-right">
+      <div class="pill">
+        <span class="icon">⚡</span>
+        <span>Mode démo</span>
       </div>
-      <form onsubmit="processTransfer(event)">
-        <div class="form-group">
-          <label>Montant (FCFA)</label>
-          <input type="number" id="transferAmount" placeholder="Ex: 5000" required min="100">
-        </div>
-        <div class="form-group">
-          <label>Destinataire (Téléphone ou ID DIGIY)</label>
-          <input type="text" id="transferRecipient" placeholder="+221 77 XXX XX XX" required>
-        </div>
-        <div class="form-group">
-          <label>Message (optionnel)</label>
-          <input type="text" id="transferMessage" placeholder="Merci pour...">
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">
-          Envoyer l'argent
-        </button>
-        <div class="commission-badge">
-          ✓ 0% de commission • Transfer instantané
-        </div>
-      </form>
+      <div class="pill">
+        <span class="status-dot"></span>
+        <span>En ligne</span>
+      </div>
     </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>Demandes clients</span>
+          <span class="badge-counter">3 actifs</span>
+        </div>
+      </div>
+      <div class="filter-chips">
+        <span class="chip chip-active">Toutes</span>
+        <span class="chip">WhatsApp</span>
+        <span class="chip">Appels</span>
+        <span class="chip">Nouveaux</span>
+      </div>
+
+      <div class="chat-list">
+        <!-- 1 -->
+        <div class="chat-item chat-active">
+          <div class="chat-avatar">F</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Fama K. (Nouveau client)</div>
+              <div class="chat-time">10:30</div>
+            </div>
+            <div class="chat-snippet">“Bonjour, c’est pour un transfert AIBD → Saly demain 14h…”</div>
+            <div class="chat-tags">
+              <span class="tag tag-new">Nouveau</span>
+              <span class="tag tag-today">Aujourd'hui</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="chat-item">
+          <div class="chat-avatar">M</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Modou F. (AIBD → Saly)</div>
+              <div class="chat-time">Hier</div>
+            </div>
+            <div class="chat-snippet">“OK pour 14h demain, je vous envoie le tarif et le lien de paiement…”</div>
+            <div class="chat-tags">
+              <span class="tag tag-wapp">WhatsApp</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="chat-item">
+          <div class="chat-avatar">A</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Aïsha N. (Retour hôtel)</div>
+              <div class="chat-time">24/11</div>
+            </div>
+            <div class="chat-snippet">“Parfait, c’est booké merci beaucoup 🙏”</div>
+            <div class="chat-tags">
+              <span class="tag">Client fidèle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CHAT PANEL -->
+    <main class="main">
+      <div class="main-header">
+        <div class="thread-info">
+          <div class="thread-title">
+            <span class="dot"></span>
+            <span>Demande en cours</span>
+          </div>
+          <div class="thread-main">
+            Fama K. — Transfert AIBD → Saly
+          </div>
+          <div class="thread-meta">
+            Dernier message il y a 2 min • Canal recommandé : WhatsApp
+          </div>
+        </div>
+        <div class="thread-actions">
+          <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
+            <span>💬</span>
+            <span>Ouvrir dans WhatsApp</span>
+          </a>
+          <a href="tel:+221771342889" class="btn-sm btn-sm-call">
+            <span>📞</span>
+            <span>Appeler le client</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="messages">
+        <!-- CLIENT -->
+        <div class="msg-row client">
+          <div>
+            <div class="msg client">
+              Bonjour Lamine, c’est pour un transfert AIBD vers Saly demain à 14h. Nous sommes 3 personnes avec 2 valises.
+            </div>
+            <div class="msg-meta">Client • 10:30</div>
+          </div>
+        </div>
+
+        <!-- PRO -->
+        <div class="msg-row pro">
+          <div>
+            <div class="msg pro">
+              Salam Fama 👋 Merci pour votre message. Oui disponible.  
+              Pouvez-vous me confirmer l’heure exacte d’atterrissage + le nombre de bagages ?
+            </div>
+            <div class="msg-meta right">Vous • 10:32</div>
+          </div>
+        </div>
+
+        <!-- CLIENT -->
+        <div class="msg-row client">
+          <div>
+            <div class="msg client">
+              On atterrit à 13h20 insha’Allah. 2 grandes valises + 1 bagage cabine.
+            </div>
+            <div class="msg-meta">Client • 10:34</div>
+          </div>
+        </div>
+
+        <!-- PRO -->
+        <div class="msg-row pro">
+          <div>
+            <div class="msg pro">
+              Parfait ✅  
+              Tarif AIBD → Saly : <strong>30.000 F tout compris</strong>.  
+              Je peux vous envoyer le lien de paiement DIGIY PAY ou vous régler en cash à l’arrivée.
+            </div>
+            <div class="msg-meta right">Vous • 10:36</div>
+          </div>
+        </div>
+
+        <!-- HINT -->
+        <div class="hint-banner">
+          <span class="icon">💡</span>
+          <div>
+            <strong>Tip DIGIY :</strong> Finalisez toujours sur WhatsApp pour rassurer le client et sécuriser la conversation.  
+            DIGIY PRO CHAT sert de tableau de bord et d’historique centralisé.
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT BAR (FAKE) -->
+      <div class="input-bar">
+        <div class="input-fake">
+          <span class="input-dot"></span>
+          <span>Écrire une réponse… (le vrai message partira ensuite via WhatsApp ou appel)</span>
+        </div>
+        <div class="input-actions">
+          <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
+            <span>💬</span><span>WhatsApp</span>
+          </a>
+          <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">
+            <span>📞</span><span>Appel</span>
+          </a>
+        </div>
+      </div>
+    </main>
   </div>
+</div>
 
-  <script>
-    // STORAGE KEYS
-    const STORAGE_BALANCE = 'digiy_pay_balance';
-    const STORAGE_TRANSACTIONS = 'digiy_pay_transactions';
-    const STORAGE_USER = 'digiy_pay_user';
-
-    // LOAD DATA
-    let balance = parseInt(localStorage.getItem(STORAGE_BALANCE)) || 0;
-    let transactions = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS)) || [];
-
-    // UPDATE UI
-    function updateBalance() {
-      document.getElementById('balance').textContent = formatMoney(balance);
-      localStorage.setItem(STORAGE_BALANCE, balance);
-    }
-
-    function formatMoney(amount) {
-      return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
-    }
-
-    function openModal(type) {
-      document.getElementById(type + 'Modal').classList.add('active');
-    }
-
-    function closeModal(type) {
-      document.getElementById(type + 'Modal').classList.remove('active');
-    }
-
-    function selectMethod(method) {
-      alert(`Méthode sélectionnée: ${method}\n\nDans la version complète, cela ouvrira le processus de paiement ${method}.`);
-    }
-
-    function processRecharge(e) {
-      e.preventDefault();
-      const amount = parseInt(document.getElementById('rechargeAmount').value);
-      const method = document.getElementById('rechargeMethod').value;
-      const phone = document.getElementById('rechargePhone').value;
-
-      // Simulate payment
-      balance += amount;
-      updateBalance();
-
-      // Add transaction
-      transactions.unshift({
-        type: 'recharge',
-        amount: amount,
-        method: method,
-        phone: phone,
-        date: new Date().toISOString(),
-        status: 'completed'
-      });
-      localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(transactions));
-
-      alert(`✅ Recharge de ${formatMoney(amount)} réussie!\n\nMéthode: ${method}\nNuméro: ${phone}\n\n💰 Nouveau solde: ${formatMoney(balance)}`);
-      closeModal('recharge');
-      e.target.reset();
-    }
-
-    function processTransfer(e) {
-      e.preventDefault();
-      const amount = parseInt(document.getElementById('transferAmount').value);
-      const recipient = document.getElementById('transferRecipient').value;
-      const message = document.getElementById('transferMessage').value;
-
-      if (amount > balance) {
-        alert('❌ Solde insuffisant!');
-        return;
-      }
-
-      // Process transfer
-      balance -= amount;
-      updateBalance();
-
-      // Add transaction
-      transactions.unshift({
-        type: 'transfer',
-        amount: -amount,
-        recipient: recipient,
-        message: message,
-        date: new Date().toISOString(),
-        status: 'completed'
-      });
-      localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(transactions));
-
-      alert(`✅ Transfer de ${formatMoney(amount)} effectué!\n\nDestinataire: ${recipient}\nMessage: ${message || 'Aucun'}\n\n💰 Nouveau solde: ${formatMoney(balance)}`);
-      closeModal('transfer');
-      e.target.reset();
-    }
-
-    function viewHistory() {
-      if (transactions.length === 0) {
-        alert('Aucune transaction pour le moment.');
-        return;
-      }
-
-      let history = '📊 HISTORIQUE DES TRANSACTIONS\n\n';
-      transactions.slice(0, 10).forEach(tx => {
-        const date = new Date(tx.date).toLocaleDateString('fr-FR');
-        history += `${tx.type === 'recharge' ? '💰' : '💸'} ${tx.type.toUpperCase()}\n`;
-        history += `Montant: ${formatMoney(Math.abs(tx.amount))}\n`;
-        history += `Date: ${date}\n`;
-        if (tx.recipient) history += `Destinataire: ${tx.recipient}\n`;
-        history += '\n';
-      });
-
-      alert(history);
-    }
-
-    // Initialize
-    updateBalance();
-
-    console.log(`
-🔥 DIGIY PAY LOADED! 💎
-
-Pierre par pierre, on construit l'écosystème!
-L'Afrique enracinée, connectée au monde.
-
-∞ 0% Commission • 100% Liberté ∞
-    `);
-  </script>
 </body>
 </html>
