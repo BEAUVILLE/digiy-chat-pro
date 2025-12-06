@@ -751,7 +751,7 @@
                     </div>
                 </div>
                 <div class="thread-actions">
-                    <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
+                    <a id="btn-wa-main" href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
                         <span>💬</span>
                         <span>Ouvrir dans WhatsApp</span>
                     </a>
@@ -818,7 +818,7 @@
                     <span>Écrire une réponse… (le vrai message partira ensuite via WhatsApp ou appel)</span>
                 </div>
                 <div class="input-actions">
-                    <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
+                    <a id="btn-wa-footer" href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
                         <span>💬</span><span>WhatsApp</span>
                     </a>
                     <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">
@@ -829,6 +829,156 @@
         </main>
     </div>
 </div>
+
+<!-- SCRIPT DIGIY PRO CHAT + FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, addDoc,
+    collection, serverTimestamp, increment
+  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+  import {
+    getAuth, signInAnonymously
+  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
+  // 🔥 CONFIG FIREBASE À REMPLACER PAR LA TIENNE
+  const firebaseConfig = {
+    apiKey: "TA_API_KEY",
+    authDomain: "TON-PROJET.firebaseapp.com",
+    projectId: "TON-PROJET",
+    storageBucket: "TON-PROJET.appspot.com",
+    messagingSenderId: "XXX",
+    appId: "XXX"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Connexion anonyme pour PRO CHAT (DEV)
+  signInAnonymously(auth).catch((err) => {
+    console.error("Erreur auth anonyme DIGIY PRO CHAT:", err);
+  });
+
+  function normalizePhone(phone) {
+    if (!phone) return "";
+    return phone.replace(/\D/g, "");
+  }
+
+  async function upsertContact({ clientName, clientPhone }) {
+    const contactId = normalizePhone(clientPhone);
+    if (!contactId) {
+      throw new Error("Téléphone client invalide");
+    }
+
+    const ref = doc(db, "contacts", contactId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      await setDoc(ref, {
+        displayName: clientName || snap.data().displayName || "",
+        phone: clientPhone,
+        lastSeenAt: serverTimestamp(),
+        totalRequests: increment(1)
+      }, { merge: true });
+    } else {
+      await setDoc(ref, {
+        displayName: clientName || "",
+        phone: clientPhone,
+        firstSeenAt: serverTimestamp(),
+        lastSeenAt: serverTimestamp(),
+        totalRequests: 1
+      });
+    }
+
+    return contactId;
+  }
+
+  async function incrementProUsage({ proId, module }) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate() + 0).padStart(2, "0");
+    const docId = `${proId}_${yyyy}${mm}${dd}`;
+
+    const ref = doc(db, "proUsageDaily", docId);
+
+    await setDoc(ref, {
+      proId,
+      date: `${yyyy}-${mm}-${dd}`,
+      totalRequests: increment(1),
+      [`moduleCounts.${module}`]: increment(1),
+      lastUpdatedAt: serverTimestamp()
+    }, { merge: true });
+  }
+
+  async function createProChatRequest({
+    proId,
+    module,
+    clientName,
+    clientPhone,
+    shortMessage,
+    channel = "whatsapp",
+    sourcePage = "digiy-pro-chat"
+  }) {
+
+    const contactId = await upsertContact({ clientName, clientPhone });
+
+    await addDoc(collection(db, "proChatRequests"), {
+      proId,
+      module,
+      contactId,
+      clientName: clientName || "",
+      clientPhone,
+      shortMessage,
+      channel,
+      status: "nouveau",
+      sourcePage,
+      createdAt: serverTimestamp(),
+      lastUpdatedAt: serverTimestamp()
+    });
+
+    await incrementProUsage({ proId, module });
+  }
+
+  // Branche les boutons WhatsApp sur la création de demande
+  window.addEventListener("DOMContentLoaded", () => {
+    const mainWaBtn = document.getElementById("btn-wa-main");
+    const footerWaBtn = document.getElementById("btn-wa-footer");
+
+    const proId = "LAMINE_DRIVER";     // 👉 À adapter à ton UID pro réel
+    const moduleKey = "driver";
+
+    async function handleWhatsAppClick(source) {
+      try {
+        await createProChatRequest({
+          proId,
+          module: moduleKey,
+          clientName: "Fama K. (Nouveau client)",
+          clientPhone: "+221771342889",
+          shortMessage: "Transfert AIBD → Saly demain 14h, 3 pers, 2 valises.",
+          channel: "whatsapp",
+          sourcePage: source
+        });
+        console.log("🔥 Demande PRO CHAT enregistrée (" + source + ")");
+      } catch (err) {
+        console.error("Erreur création demande DIGIY PRO CHAT:", err);
+      }
+    }
+
+    if (mainWaBtn) {
+      mainWaBtn.addEventListener("click", () => {
+        handleWhatsAppClick("prochat_main_whatsapp");
+      });
+    }
+
+    if (footerWaBtn) {
+      footerWaBtn.addEventListener("click", () => {
+        handleWhatsAppClick("prochat_footer_whatsapp");
+      });
+    }
+  });
+</script>
 
 </body>
 </html>
