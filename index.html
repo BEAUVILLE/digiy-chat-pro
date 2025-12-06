@@ -1,672 +1,838 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
-  <meta name="theme-color" content="#020617">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#020617;
-      --bg-soft:#030712;
-      --card:#020617;
-      --card-soft:#030712;
-      --accent:#f97316; /* orange vif */
-      --accent-soft:#fed7aa;
-      --accent-strong:#ea580c;
-      --accent-whatsapp:#22c55e;
-      --accent-call:#0ea5e9;
-      --ink:#f9fafb;
-      --ink-soft:#e5e7eb;
-      --muted:#9ca3af;
-      --line:#1f2937;
-      --danger:#ef4444;
-      --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
-      --radius-lg:24px;
-      --radius-md:18px;
-      --radius-pill:999px;
-    }
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    html{
-      font-size:16px;
-    }
-
-    body{
-      min-height:100vh;
-      font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
-      color:var(--ink);
-      display:flex;
-      justify-content:center;
-      align-items:stretch;
-      padding:1.5rem;
-    }
-
-    @media (max-width:768px){
-      body{
-        padding:0.75rem;
-      }
-    }
-
-    .app{
-      width:100%;
-      max-width:1200px;
-      background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
-      border-radius:32px;
-      border:1px solid rgba(148,163,184,0.2);
-      box-shadow:var(--shadow-soft);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      position:relative;
-    }
-
-    .app::before{
-      content:'';
-      position:absolute;
-      inset:-30%;
-      background:
-        radial-gradient(circle at 0 0,rgba(248,113,113,0.08),transparent 55%),
-        radial-gradient(circle at 100% 0,rgba(56,189,248,0.12),transparent 55%);
-      opacity:0.7;
-      pointer-events:none;
-    }
-
-    /* HEADER */
-    .header{
-      position:relative;
-      z-index:1;
-      padding:1.25rem 1.75rem;
-      border-bottom:1px solid rgba(148,163,184,0.25);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:1rem;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:0.9rem;
-    }
-
-    .brand-logo{
-      width:44px;
-      height:44px;
-      border-radius:18px;
-      background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#0b1120;
-      font-family:'Outfit',sans-serif;
-      font-weight:900;
-      font-size:1.5rem;
-      box-shadow:0 16px 40px rgba(248,113,22,0.7);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .brand-logo::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.5),transparent 55%);
-      opacity:0.7;
-      mix-blend-mode:screen;
-    }
-
-    .brand-text-title{
-      font-family:'Outfit',sans-serif;
-      font-size:1.4rem;
-      font-weight:900;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-      background:linear-gradient(135deg,#f97316,#fed7aa);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-    }
-
-    .brand-text-sub{
-      font-size:0.8rem;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:0.14em;
-      font-weight:600;
-    }
-
-    .header-right{
-      display:flex;
-      align-items:center;
-      gap:0.75rem;
-    }
-
-    .pill{
-      padding:0.4rem 0.9rem;
-      border-radius:var(--radius-pill);
-      border:1px solid rgba(148,163,184,0.5);
-      font-size:0.78rem;
-      text-transform:uppercase;
-      letter-spacing:0.12em;
-      color:var(--ink-soft);
-      display:flex;
-      align-items:center;
-      gap:0.35rem;
-      background:rgba(15,23,42,0.85);
-    }
-
-    .pill span.icon{
-      font-size:0.9rem;
-    }
-
-    .status-dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:var(--accent-whatsapp);
-      box-shadow:0 0 0 6px rgba(34,197,94,0.3);
-    }
-
-    @media (max-width:768px){
-      .header{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .header-right{
-        width:100%;
-        justify-content:space-between;
-      }
-    }
-
-    /* LAYOUT */
-    .layout{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:minmax(0,0.9fr) minmax(0,1.4fr);
-      min-height:520px;
-      max-height:76vh;
-    }
-
-    @media (max-width:900px){
-      .layout{
-        grid-template-columns:1fr;
-        max-height:none;
-        height:auto;
-      }
-    }
-
-    /* SIDEBAR */
-    .sidebar{
-      border-right:1px solid rgba(30,64,175,0.4);
-      background:radial-gradient(circle at 0 0,#020617 0,#020617 50%,#020617 100%);
-      display:flex;
-      flex-direction:column;
-    }
-
-    @media (max-width:900px){
-      .sidebar{
-        max-height:280px;
-      }
-    }
-
-    .sidebar-header{
-      padding:1rem 1.2rem 0.25rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:0.75rem;
-    }
-
-    .sidebar-title{
-      font-size:0.95rem;
-      text-transform:uppercase;
-      letter-spacing:0.12em;
-      color:var(--muted);
-      font-weight:600;
-      display:flex;
-      align-items:center;
-      gap:0.4rem;
-    }
-
-    .badge-counter{
-      padding:0.1rem 0.55rem;
-      border-radius:999px;
-      border:1px solid rgba(248,250,252,0.3);
-      font-size:0.7rem;
-      font-weight:700;
-      color:var(--accent-soft);
-      background:rgba(15,23,42,0.7);
-    }
-
-    .filter-chips{
-      padding:0.2rem 1.2rem 0.8rem;
-      display:flex;
-      gap:0.4rem;
-      flex-wrap:wrap;
-    }
-
-    .chip{
-      padding:0.25rem 0.7rem;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.45);
-      font-size:0.75rem;
-      color:var(--muted);
-      background:rgba(15,23,42,0.8);
-      cursor:default;
-    }
-
-    .chip.chip-active{
-      border-color:var(--accent);
-      background:rgba(248,113,22,0.16);
-      color:var(--accent-soft);
-      font-weight:600;
-    }
-
-    .chat-list{
-      flex:1;
-      overflow-y:auto;
-      padding:0.4rem 0.6rem 0.8rem;
-      scrollbar-width:thin;
-      scrollbar-color:rgba(148,163,184,0.6) transparent;
-    }
-
-    .chat-list::-webkit-scrollbar{
-      width:6px;
-    }
-
-    .chat-list::-webkit-scrollbar-thumb{
-      background:rgba(148,163,184,0.6);
-      border-radius:999px;
-    }
-
-    .chat-item{
-      display:flex;
-      gap:0.65rem;
-      padding:0.55rem 0.6rem;
-      border-radius:18px;
-      cursor:default;
-      transition:background 0.2s ease,transform 0.15s ease,border 0.2s ease;
-      border:1px solid transparent;
-    }
-
-    .chat-item:hover{
-      background:rgba(15,23,42,0.9);
-      transform:translateY(-1px);
-      border-color:rgba(31,41,55,0.9);
-    }
-
-    .chat-item.chat-active{
-      background:radial-gradient(circle at 0 0,rgba(248,113,22,0.16),rgba(15,23,42,0.95));
-      border-color:rgba(248,113,22,0.7);
-      box-shadow:0 12px 30px rgba(15,23,42,0.9);
-    }
-
-    .chat-avatar{
-      width:36px;
-      height:36px;
-      border-radius:14px;
-      background:radial-gradient(circle at 0 0,#f97316,#facc15);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.1rem;
-      font-weight:800;
-      color:#0b1120;
-      flex-shrink:0;
-    }
-
-    .chat-meta{
-      flex:1;
-      min-width:0;
-    }
-
-    .chat-row-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:0.15rem;
-    }
-
-    .chat-name{
-      font-size:0.88rem;
-      font-weight:700;
-      color:var(--ink);
-    }
-
-    .chat-time{
-      font-size:0.72rem;
-      color:var(--muted);
-    }
-
-    .chat-snippet{
-      font-size:0.8rem;
-      color:var(--ink-soft);
-      opacity:0.9;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:200px;
-    }
-
-    .chat-tags{
-      margin-top:0.15rem;
-      display:flex;
-      gap:0.35rem;
-      flex-wrap:wrap;
-    }
-
-    .tag{
-      font-size:0.68rem;
-      padding:0.1rem 0.4rem;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.5);
-      color:var(--muted);
-    }
-
-    .tag.tag-new{
-      border-color:var(--accent);
-      color:var(--accent-soft);
-      background:rgba(248,113,22,0.1);
-      font-weight:600;
-    }
-
-    .tag.tag-wapp{
-      border-color:var(--accent-whatsapp);
-      color:var(--accent-whatsapp);
-      background:rgba(22,163,74,0.12);
-      font-weight:600;
-    }
-
-    .tag.tag-today{
-      border-color:rgba(56,189,248,0.7);
-      color:#7dd3fc;
-      background:rgba(8,47,73,0.8);
-      font-weight:600;
-    }
-
-    /* MAIN CHAT PANEL */
-    .main{
-      background:radial-gradient(circle at top,#020617,#020617 55%);
-      display:flex;
-      flex-direction:column;
-      position:relative;
-    }
-
-    .main-header{
-      padding:1rem 1.5rem 0.5rem;
-      border-bottom:1px solid rgba(30,64,175,0.5);
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:1rem;
-    }
-
-    .thread-info{
-      display:flex;
-      flex-direction:column;
-      gap:0.2rem;
-    }
-
-    .thread-title{
-      font-size:0.95rem;
-      text-transform:uppercase;
-      letter-spacing:0.12em;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      gap:0.35rem;
-      font-weight:600;
-    }
-
-    .thread-title span.dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:var(--accent);
-      box-shadow:0 0 0 5px rgba(248,113,22,0.5);
-    }
-
-    .thread-main{
-      font-size:1.02rem;
-      font-weight:700;
-      color:var(--ink);
-      display:flex;
-      align-items:center;
-      gap:0.4rem;
-    }
-
-    .thread-meta{
-      font-size:0.8rem;
-      color:var(--muted);
-    }
-
-    .thread-actions{
-      display:flex;
-      gap:0.5rem;
-      flex-wrap:wrap;
-    }
-
-    .btn-sm{
-      padding:0.3rem 0.7rem;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.6);
-      background:rgba(15,23,42,0.9);
-      color:var(--ink-soft);
-      font-size:0.75rem;
-      display:flex;
-      align-items:center;
-      gap:0.3rem;
-    }
-
-    .btn-sm-whatsapp{
-      border-color:var(--accent-whatsapp);
-      color:var(--accent-soft);
-      background:rgba(22,163,74,0.16);
-      text-decoration:none;
-    }
-
-    .btn-sm-call{
-      border-color:var(--accent-call);
-      color:#bae6fd;
-      background:rgba(12,74,110,0.85);
-      text-decoration:none;
-    }
-
-    /* MESSAGES */
-    .messages{
-      flex:1;
-      padding:1.1rem 1.5rem;
-      overflow-y:auto;
-      display:flex;
-      flex-direction:column;
-      gap:0.6rem;
-      scrollbar-width:thin;
-      scrollbar-color:rgba(148,163,184,0.7) transparent;
-    }
-
-    .messages::-webkit-scrollbar{
-      width:6px;
-    }
-    .messages::-webkit-scrollbar-thumb{
-      background:rgba(148,163,184,0.7);
-      border-radius:999px;
-    }
-
-    .msg-row{
-      display:flex;
-      margin-bottom:0.1rem;
-    }
-
-    .msg-row.client{
-      justify-content:flex-start;
-    }
-
-    .msg-row.pro{
-      justify-content:flex-end;
-    }
-
-    .msg{
-      max-width:75%;
-      padding:0.7rem 0.9rem;
-      border-radius:18px;
-      font-size:0.9rem;
-      line-height:1.5;
-      position:relative;
-    }
-
-    .msg.client{
-      background:rgba(15,23,42,0.95);
-      border:1px solid rgba(51,65,85,0.9);
-      color:var(--ink-soft);
-      border-bottom-left-radius:4px;
-    }
-
-    .msg.pro{
-      background:linear-gradient(135deg,#f97316,#ea580c);
-      color:#0b1120;
-      border-bottom-right-radius:4px;
-      font-weight:500;
-    }
-
-    .msg-meta{
-      font-size:0.7rem;
-      color:var(--muted);
-      margin:0.15rem 0.25rem 0.35rem;
-    }
-
-    .msg-meta.right{
-      text-align:right;
-    }
-
-    .hint-banner{
-      margin-top:0.4rem;
-      padding:0.6rem 0.8rem;
-      border-radius:14px;
-      background:rgba(15,23,42,0.95);
-      border:1px dashed rgba(148,163,184,0.6);
-      font-size:0.78rem;
-      color:var(--muted);
-      display:flex;
-      align-items:flex-start;
-      gap:0.45rem;
-    }
-
-    .hint-banner span.icon{
-      font-size:0.9rem;
-      margin-top:0.05rem;
-    }
-
-    /* INPUT BAR (FAKE) */
-    .input-bar{
-      padding:0.8rem 1.2rem 1.1rem;
-      border-top:1px solid rgba(30,64,175,0.5);
-      display:flex;
-      gap:0.6rem;
-      align-items:center;
-      background:rgba(2,6,23,0.95);
-    }
-
-    .input-fake{
-      flex:1;
-      border-radius:999px;
-      background:rgba(15,23,42,0.95);
-      border:1px solid rgba(51,65,85,0.9);
-      padding:0.6rem 0.9rem;
-      display:flex;
-      align-items:center;
-      gap:0.5rem;
-      color:var(--muted);
-      font-size:0.85rem;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .input-dot{
-      width:6px;
-      height:6px;
-      border-radius:999px;
-      background:var(--muted);
-    }
-
-    .input-actions{
-      display:flex;
-      gap:0.4rem;
-    }
-
-    .btn-cta-mini{
-      border-radius:999px;
-      padding:0.5rem 0.85rem;
-      font-size:0.8rem;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      display:flex;
-      align-items:center;
-      gap:0.3rem;
-      border:none;
-      cursor:pointer;
-      text-decoration:none;
-    }
-
-    .btn-cta-wa{
-      background:var(--accent-whatsapp);
-      color:#022c22;
-    }
-
-    .btn-cta-call{
-      background:var(--accent-call);
-      color:#0b1120;
-    }
-
-    @media (max-width:768px){
-      .messages{
-        padding:0.9rem 1rem;
-      }
-      .main-header{
-        padding:0.8rem 1rem 0.4rem;
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .thread-actions{
-        width:100%;
-        justify-content:flex-start;
-      }
-      .input-bar{
-        padding:0.7rem 0.8rem 0.9rem;
-      }
-    }
-  </style>
+  <meta charset="utf-8">
+  <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
+  <meta name="theme-color" content="#020617">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+/* CODE CSS INTÉGRAL CI-DESSUS (NON RÉPÉTÉ ICI PAR CONCISITÉ) */
+/* Collez le code CSS mis à jour dans cette balise <style> */
+    :root{
+      --bg:#020617;
+      --bg-soft:#030712;
+      --card:#020617;
+      --card-soft:#030712;
+      --accent:#f97316; /* orange vif */
+      --accent-soft:#fed7aa;
+      --accent-strong:#ea580c;
+      --accent-whatsapp:#22c55e;
+      --accent-call:#0ea5e9;
+      --ink:#f9fafb;
+      --ink-soft:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --danger:#ef4444;
+      --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-pill:999px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    html{
+      font-size:16px;
+    }
+
+    body{
+      min-height:100vh;
+      font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
+      color:var(--ink);
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      padding:1.5rem;
+    }
+
+    @media (max-width:768px){
+      body{
+        padding:0.75rem;
+      }
+    }
+
+    .app{
+      width:100%;
+      max-width:1200px;
+      background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
+      border-radius:32px;
+      border:1px solid rgba(148,163,184,0.2);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .app::before{
+      content:'';
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 0 0,rgba(248,113,113,0.08),transparent 55%),
+        radial-gradient(circle at 100% 0,rgba(56,189,248,0.12),transparent 55%);
+      opacity:0.7;
+      pointer-events:none;
+    }
+
+    /* HEADER */
+    .header{
+      position:relative;
+      z-index:1;
+      padding:1.25rem 1.75rem;
+      border-bottom:1px solid rgba(148,163,184,0.25);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:0.9rem;
+    }
+
+    .brand-logo{
+      width:44px;
+      height:44px;
+      border-radius:18px;
+      background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#0b1120;
+      font-family:'Outfit',sans-serif;
+      font-weight:900;
+      font-size:1.5rem;
+      box-shadow:0 16px 40px rgba(248,113,22,0.7);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .brand-logo::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.5),transparent 55%);
+      opacity:0.7;
+      mix-blend-mode:screen;
+    }
+
+    .brand-text-title{
+      font-family:'Outfit',sans-serif;
+      font-size:1.4rem;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      background:linear-gradient(135deg,#f97316,#fed7aa);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .brand-text-sub{
+      font-size:0.8rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      font-weight:600;
+    }
+
+    .header-right{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+    }
+
+    .pill{
+      padding:0.4rem 0.9rem;
+      border-radius:var(--radius-pill);
+      border:1px solid rgba(148,163,184,0.5);
+      font-size:0.78rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--ink-soft);
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
+      background:rgba(15,23,42,0.85);
+    }
+
+    .pill span.icon{
+      font-size:0.9rem;
+    }
+
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent-whatsapp);
+      box-shadow:0 0 0 6px rgba(34,197,94,0.3);
+    }
+
+    @media (max-width:768px){
+      .header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .header-right{
+        width:100%;
+        justify-content:space-between;
+      }
+    }
+
+    /* LAYOUT */
+    .layout{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:minmax(0,0.9fr) minmax(0,1.4fr);
+      min-height:520px;
+      max-height:76vh;
+    }
+
+    @media (max-width:900px){
+      .layout{
+        grid-template-columns:1fr;
+        max-height:none;
+        height:auto;
+      }
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      border-right:1px solid rgba(30,64,175,0.4);
+      background:radial-gradient(circle at 0 0,#020617 0,#020617 50%,#020617 100%);
+      display:flex;
+      flex-direction:column;
+    }
+
+    @media (max-width:900px){
+      .sidebar{
+        max-height:280px;
+      }
+    }
+
+    .sidebar-header{
+      padding:1rem 1.2rem 0.25rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:0.75rem;
+    }
+
+    .sidebar-title{
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+
+    .badge-counter{
+      padding:0.1rem 0.55rem;
+      border-radius:999px;
+      border:1px solid rgba(248,250,252,0.3);
+      font-size:0.7rem;
+      font-weight:700;
+      color:var(--accent-soft);
+      background:rgba(15,23,42,0.7);
+    }
+
+    .filter-chips{
+      padding:0.2rem 1.2rem 0.8rem;
+      display:flex;
+      gap:0.4rem;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      padding:0.25rem 0.7rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.45);
+      font-size:0.75rem;
+      color:var(--muted);
+      background:rgba(15,23,42,0.8);
+      cursor:default;
+    }
+
+    .chip.chip-active{
+      border-color:var(--accent);
+      background:rgba(248,113,22,0.16);
+      color:var(--accent-soft);
+      font-weight:600;
+    }
+
+    .chat-list{
+      flex:1;
+      overflow-y:auto;
+      padding:0.4rem 0.6rem 0.8rem;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(148,163,184,0.6) transparent;
+    }
+
+    .chat-list::-webkit-scrollbar{
+      width:6px;
+    }
+
+    .chat-list::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.6);
+      border-radius:999px;
+    }
+
+    .chat-item{
+      display:flex;
+      gap:0.65rem;
+      padding:0.55rem 0.6rem;
+      border-radius:18px;
+      cursor:default;
+      transition:background 0.2s ease,transform 0.15s ease,border 0.2s ease;
+      border:1px solid transparent;
+    }
+
+    .chat-item:hover{
+      background:rgba(15,23,42,0.9);
+      transform:translateY(-1px);
+      border-color:rgba(31,41,55,0.9);
+    }
+
+    .chat-item.chat-active{
+      background:radial-gradient(circle at 0 0,rgba(248,113,22,0.16),rgba(15,23,42,0.95));
+      border-color:rgba(248,113,22,0.7);
+      box-shadow:0 12px 30px rgba(15,23,42,0.9);
+    }
+
+    .chat-avatar{
+      width:36px;
+      height:36px;
+      border-radius:14px;
+      background:radial-gradient(circle at 0 0,#f97316,#facc15);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.1rem;
+      font-weight:800;
+      color:#0b1120;
+      flex-shrink:0;
+    }
+
+    .chat-meta{
+      flex:1;
+      min-width:0;
+    }
+
+    .chat-row-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:0.15rem;
+    }
+
+    .chat-name{
+      font-size:0.88rem;
+      font-weight:700;
+      color:var(--ink);
+    }
+
+    .chat-time{
+      font-size:0.72rem;
+      color:var(--muted);
+    }
+
+    .chat-snippet{
+      font-size:0.8rem;
+      color:var(--ink-soft);
+      opacity:0.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:200px;
+    }
+
+    .chat-tags{
+      margin-top:0.15rem;
+      display:flex;
+      gap:0.35rem;
+      flex-wrap:wrap;
+    }
+
+    .tag{
+      font-size:0.68rem;
+      padding:0.1rem 0.4rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      color:var(--muted);
+    }
+
+    .tag.tag-new{
+      border-color:var(--accent);
+      color:var(--accent-soft);
+      background:rgba(248,113,22,0.1);
+      font-weight:600;
+    }
+
+    .tag.tag-wapp{
+      border-color:var(--accent-whatsapp);
+      color:var(--accent-whatsapp);
+      background:rgba(22,163,74,0.12);
+      font-weight:600;
+    }
+
+    .tag.tag-today{
+      border-color:rgba(56,189,248,0.7);
+      color:#7dd3fc;
+      background:rgba(8,47,73,0.8);
+      font-weight:600;
+    }
+
+    /* MAIN CHAT PANEL */
+    .main{
+      background:radial-gradient(circle at top,#020617,#020617 55%);
+      display:flex;
+      flex-direction:column;
+      position:relative;
+    }
+
+    .main-header{
+      padding:1rem 1.5rem 0.5rem;
+      border-bottom:1px solid rgba(30,64,175,0.5);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+    }
+
+    .thread-info{
+      display:flex;
+      flex-direction:column;
+      gap:0.2rem;
+    }
+
+    .thread-title{
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
+      font-weight:600;
+    }
+
+    .thread-title span.dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent);
+      box-shadow:0 0 0 5px rgba(248,113,22,0.5);
+    }
+
+    .thread-main{
+      font-size:1.02rem;
+      font-weight:700;
+      color:var(--ink);
+      display:flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+
+    .thread-meta{
+      font-size:0.8rem;
+      color:var(--muted);
+    }
+
+    .thread-actions{
+      display:flex;
+      gap:0.5rem;
+      flex-wrap:wrap;
+    }
+
+    .btn-sm{
+      padding:0.3rem 0.7rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      color:var(--ink-soft);
+      font-size:0.75rem;
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+    }
+
+    .btn-sm-whatsapp{
+      border-color:var(--accent-whatsapp);
+      color:var(--accent-soft);
+      background:rgba(22,163,74,0.16);
+      text-decoration:none;
+    }
+
+    .btn-sm-call{
+      border-color:var(--accent-call);
+      color:#bae6fd;
+      background:rgba(12,74,110,0.85);
+      text-decoration:none;
+    }
+
+    /* MESSAGES */
+    .messages{
+      flex:1;
+      padding:1.1rem 1.5rem;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(148,163,184,0.7) transparent;
+    }
+
+    .messages::-webkit-scrollbar{
+      width:6px;
+    }
+    .messages::-webkit-scrollbar-thumb{
+      background:rgba(148,163,184,0.7);
+      border-radius:999px;
+    }
+
+    .msg-row{
+      display:flex;
+      margin-bottom:0.1rem;
+    }
+
+    .msg-row.client{
+      justify-content:flex-start;
+    }
+
+    .msg-row.pro{
+      justify-content:flex-end;
+    }
+
+    .msg{
+      max-width:75%;
+      padding:0.7rem 0.9rem;
+      border-radius:18px;
+      font-size:0.9rem;
+      line-height:1.5;
+      position:relative;
+    }
+
+    .msg.client{
+      background:rgba(15,23,42,0.95);
+      border:1px solid rgba(51,65,85,0.9);
+      color:var(--ink-soft);
+      border-bottom-left-radius:4px;
+    }
+
+    .msg.pro{
+      background:linear-gradient(135deg,#f97316,#ea580c);
+      color:#0b1120;
+      border-bottom-right-radius:4px;
+      font-weight:500;
+    }
+
+    .msg-meta{
+      font-size:0.7rem;
+      color:var(--muted);
+      margin:0.15rem 0.25rem 0.35rem;
+    }
+
+    .msg-meta.right{
+      text-align:right;
+    }
+
+    .hint-banner{
+      margin-top:0.4rem;
+      padding:0.6rem 0.8rem;
+      border-radius:14px;
+      background:rgba(15,23,42,0.95);
+      border:1px dashed rgba(148,163,184,0.6);
+      font-size:0.78rem;
+      color:var(--muted);
+      display:flex;
+      align-items:flex-start;
+      gap:0.45rem;
+    }
+
+    .hint-banner span.icon{
+      font-size:0.9rem;
+      margin-top:0.05rem;
+    }
+
+    /* INPUT BAR (FAKE) */
+    .input-bar{
+      padding:0.8rem 1.2rem 1.1rem;
+      border-top:1px solid rgba(30,64,175,0.5);
+      display:flex;
+      gap:0.6rem;
+      align-items:center;
+      background:rgba(2,6,23,0.95);
+    }
+
+    .input-fake{
+      flex:1;
+      border-radius:999px;
+      background:rgba(15,23,42,0.95);
+      border:1px solid rgba(51,65,85,0.9);
+      padding:0.6rem 0.9rem;
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      color:var(--muted);
+      font-size:0.85rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .input-dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--muted);
+    }
+
+    .input-actions{
+      display:flex;
+      gap:0.4rem;
+    }
+
+    .btn-cta-mini{
+      border-radius:999px;
+      padding:0.5rem 0.85rem;
+      font-size:0.8rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+      border:none;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .btn-cta-wa{
+      background:var(--accent-whatsapp);
+      color:#022c22;
+    }
+
+    .btn-cta-call{
+      background:var(--accent-call);
+      color:#0b1120;
+    }
+
+    @media (max-width:768px){
+      .messages{
+        padding:0.9rem 1rem;
+      }
+      .main-header{
+        padding:0.8rem 1rem 0.4rem;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .thread-actions{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .input-bar{
+        padding:0.7rem 0.8rem 0.9rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <div class="app">
-  <!-- HEADER -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-logo">C</div>
-      <div>
-        <div class="brand-text-title">DIGIY PRO CHAT</div>
-        <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="pill">
-        <span class="icon">⚡</span>
+    <header class="header">
+    <div class="brand">
+            <div class="brand-logo">D</div>
+      <div>
+        <div class="brand-text-title">DIGIY PRO CHAT</div>
+        <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="pill">
+        <span class="icon">⚡</span>
+        <span>Mode démo</span>
+      </div>
+      <div class="pill">
+        <span class="status-dot"></span>
+        <span>En ligne</span>
+      </div>
+    </div>
+  </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>Demandes clients</span>
+          <span class="badge-counter">3 actifs</span>
+        </div>
+      </div>
+      <div class="filter-chips">
+        <span class="chip chip-active">Toutes</span>
+        <span class="chip">WhatsApp</span>
+        <span class="chip">Appels</span>
+        <span class="chip">Nouveaux</span>
+      </div>
+
+      <div class="chat-list">
+                <div class="chat-item chat-active">
+          <div class="chat-avatar">F</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Fama K. (Nouveau client)</div>
+              <div class="chat-time">10:30</div>
+            </div>
+            <div class="chat-snippet">“Bonjour, c’est pour un transfert AIBD → Saly demain 14h…”</div>
+            <div class="chat-tags">
+              <span class="tag tag-new">Nouveau</span>
+              <span class="tag tag-today">Aujourd'hui</span>
+            </div>
+          </div>
+        </div>
+
+                <div class="chat-item">
+          <div class="chat-avatar">M</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Modou F. (AIBD → Saly)</div>
+              <div class="chat-time">Hier</div>
+            </div>
+            <div class="chat-snippet">“OK pour 14h demain, je vous envoie le tarif et le lien de paiement…”</div>
+            <div class="chat-tags">
+              <span class="tag tag-wapp">WhatsApp</span>
+            </div>
+          </div>
+        </div>
+
+                <div class="chat-item">
+          <div class="chat-avatar">A</div>
+          <div class="chat-meta">
+            <div class="chat-row-top">
+              <div class="chat-name">Aïsha N. (Retour hôtel)</div>
+              <div class="chat-time">24/11</div>
+            </div>
+            <div class="chat-snippet">“Parfait, c’est booké merci beaucoup 🙏”</div>
+            <div class="chat-tags">
+              <span class="tag">Client fidèle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+        <main class="main">
+      <div class="main-header">
+        <div class="thread-info">
+          <div class="thread-title">
+            <span class="dot"></span>
+            <span>Demande en cours</span>
+          </div>
+          <div class="thread-main">
+            Fama K. — Transfert AIBD → Saly
+          </div>
+          <div class="thread-meta">
+            Dernier message il y a 2 min • Canal recommandé : WhatsApp
+          </div>
+        </div>
+        <div class="thread-actions">
+          <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
+            <span>💬</span>
+            <span>Ouvrir dans WhatsApp</span>
+          </a>
+          <a href="tel:+221771342889" class="btn-sm btn-sm-call">
+            <span>📞</span>
+            <span>Appeler le client</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="messages">
+                <div class="msg-row client">
+          <div>
+            <div class="msg client">
+              Bonjour Lamine, c’est pour un transfert AIBD vers Saly demain à 14h. Nous sommes 3 personnes avec 2 valises.
+            </div>
+            <div class="msg-meta">Client • 10:30</div>
+          </div>
+        </div>
+
+                <div class="msg-row pro">
+          <div>
+            <div class="msg pro">
+              Salam Fama 👋 Merci pour votre message. Oui disponible.  
+              Pouvez-vous me confirmer l’heure exacte d’atterrissage + le nombre de bagages ?
+            </div>
+            <div class="msg-meta right">Vous • 10:32</div>
+          </div>
+        </div>
+
+                <div class="msg-row client">
+          <div>
+            <div class="msg client">
+              On atterrit à 13h20 insha’Allah. 2 grandes valises + 1 bagage cabine.
+            </div>
+            <div class="msg-meta">Client • 10:34</div>
+          </div>
+        </div>
+
+                <div class="msg-row pro">
+          <div>
+            <div class="msg pro">
+              Parfait ✅  
+              Tarif AIBD → Saly : <strong>30.000 F tout compris</strong>.  
+              Je peux vous envoyer le lien de paiement DIGIY PAY ou vous régler en cash à l’arrivée.
+            </div>
+            <div class="msg-meta right">Vous • 10:36</div>
+          </div>
+        </div>
+
+                <div class="hint-banner">
+          <span class="icon">💡</span>
+          <div>
+            <strong>Tip DIGIY :</strong> Finalisez toujours sur WhatsApp pour rassurer le client et sécuriser la conversation.  
+            DIGIY PRO CHAT sert de tableau de bord et d’historique centralisé.
+          </div>
+        </div>
+      </div>
+
+            <div class="input-bar">
+        <div class="input-fake">
+          <span class="input-dot"></span>
+          <span>Écrire une réponse… (le vrai message partira ensuite via WhatsApp ou appel)</span>
+        </div>
+        <div class="input-actions">
+          <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
+            <span>💬</span><span>WhatsApp</span>
+          </a>
+          <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">
+            <span>📞</span><span>Appel</span>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
         <span>Mode démo</span>
       </div>
       <div class="pill">
