@@ -628,7 +628,7 @@
         <div class="header-right">
             <div class="pill">
                 <span class="icon">⚡</span>
-                <span>Mode démo</span>
+                <span>Mode déмо</span>
             </div>
             <div class="pill">
                 <span class="status-dot"></span>
@@ -653,8 +653,11 @@
                 <span class="chip">Nouveaux</span>
             </div>
 
-            <div class="chat-list">
-                <div class="chat-item chat-active">
+            <div class="chat-list" id="chatList">
+                <!-- Chaque item a maintenant un data-chat-id + data-label -->
+                <div class="chat-item chat-active"
+                     data-chat-id="exemple-chat-1"
+                     data-label="Fama K. — Transfert AIBD → Saly">
                     <div class="chat-avatar">F</div>
                     <div class="chat-meta">
                         <div class="chat-row-top">
@@ -669,7 +672,9 @@
                     </div>
                 </div>
 
-                <div class="chat-item">
+                <div class="chat-item"
+                     data-chat-id="exemple-chat-2"
+                     data-label="Modou F. — AIBD → Saly">
                     <div class="chat-avatar">M</div>
                     <div class="chat-meta">
                         <div class="chat-row-top">
@@ -683,7 +688,9 @@
                     </div>
                 </div>
 
-                <div class="chat-item">
+                <div class="chat-item"
+                     data-chat-id="exemple-chat-3"
+                     data-label="Aïsha N. — Retour hôtel">
                     <div class="chat-avatar">A</div>
                     <div class="chat-meta">
                         <div class="chat-row-top">
@@ -728,14 +735,14 @@
 
             <!-- 💬 Zone messages dynamique (RTDB) -->
             <div class="messages" id="messagesList">
-                <!-- Messages injectés via Firebase -->
+                <!-- Messages injectés via Firebase pour le salon sélectionné -->
             </div>
 
             <div class="input-bar">
                 <div class="input-zone">
                     <textarea id="chatInput" placeholder="Écrire une note ou une réponse interne DIGIY…"></textarea>
                     <div class="input-hint">
-                        Ce message alimente l’historique DIGIY (RTDB).  
+                        Ce message alimente l’historique DIGIY (RTDB) pour ce client.  
                         Pour parler directement au client : utilisez WhatsApp ou l’appel.
                     </div>
                 </div>
@@ -756,9 +763,9 @@
     </div>
 </div>
 
-<!-- 🔥 Firebase compat (plus simple, pas de type="module") -->
+<!-- 🔥 Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
 
 <script>
   console.log("🔥 DIGIY PRO CHAT — script chargé");
@@ -766,6 +773,8 @@
   const messagesListEl = document.getElementById("messagesList");
   const chatInputEl    = document.getElementById("chatInput");
   const sendDigiyBtn   = document.getElementById("sendDigiyBtn");
+  const chatListEl     = document.getElementById("chatList");
+  const threadMainEl   = document.getElementById("threadMain");
 
   if (!sendDigiyBtn) {
     console.error("Bouton sendDigiyBtn introuvable dans le DOM.");
@@ -782,21 +791,21 @@
     appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
   };
 
-  const CHAT_ROOM_ID = "exemple-chat-1";
-  const PRO_ID       = "PRO_UID_001";
-  const USER_ID      = "USER_UID_001";
+  const PRO_ID = "PRO_UID_001";
+  const USER_ID = "USER_UID_001";
 
   let db = null;
   let messagesRef = null;
+  let currentChatId = "exemple-chat-1";
+  let currentListener = null;
 
   if (typeof firebase === "undefined") {
-    console.error("❌ Firebase N’EST PAS chargé (script bloqué ou erreur réseau).");
+    console.error("❌ Firebase N’EST PAS chargé.");
   } else {
     try {
       console.log("✅ Firebase trouvé, initialisation…");
       firebase.initializeApp(firebaseConfig);
       db = firebase.database();
-      messagesRef = db.ref("chat/" + CHAT_ROOM_ID + "/messages");
       console.log("✅ Firebase DB initialisée.");
     } catch (err) {
       console.error("❌ Erreur à l'initialisation Firebase:", err);
@@ -839,19 +848,60 @@
     messagesListEl.scrollTop = messagesListEl.scrollHeight;
   }
 
-  // 🔄 Lecture temps réel si Firebase OK
-  if (messagesRef) {
-    messagesRef.on("child_added", (snapshot) => {
+  function clearMessages(){
+    while (messagesListEl.firstChild) {
+      messagesListEl.removeChild(messagesListEl.firstChild);
+    }
+  }
+
+  function attachListenerForChat(chatId){
+    if (!db) {
+      console.warn("DB indisponible, pas de listener.");
+      return;
+    }
+
+    if (messagesRef && currentListener) {
+      messagesRef.off("child_added", currentListener);
+    }
+
+    currentChatId = chatId;
+    messagesRef = db.ref("chat/" + currentChatId + "/messages");
+    clearMessages();
+
+    currentListener = (snapshot) => {
       const msg = snapshot.val();
       if (!msg) return;
       renderMessage(msg);
+    };
+
+    messagesRef.on("child_added", currentListener);
+    console.log("👂 Listener attaché pour", currentChatId);
+  }
+
+  function handleChatSelection(e){
+    const item = e.target.closest(".chat-item");
+    if (!item) return;
+
+    const chatId = item.getAttribute("data-chat-id");
+    const label  = item.getAttribute("data-label") || "Conversation";
+
+    document.querySelectorAll(".chat-item").forEach(i => {
+      i.classList.toggle("chat-active", i === item);
     });
-  } else {
-    console.warn("ℹ️ Pas de messagesRef : lecture temps réel désactivée (Firebase non initialisé).");
+
+    if (threadMainEl) {
+      threadMainEl.textContent = label;
+    }
+
+    attachListenerForChat(chatId);
+  }
+
+  if (chatListEl) {
+    chatListEl.addEventListener("click", handleChatSelection);
   }
 
   async function sendDigiyMessage(){
-    console.log("👉 Clic sur DIGIY");
+    console.log("👉 Clic sur DIGIY pour", currentChatId);
 
     const text = (chatInputEl.value || "").trim();
     if (!text) {
@@ -860,7 +910,7 @@
     }
 
     if (!db || !messagesRef) {
-      alert("DIGIY est ouvert mais pas connecté à Firebase (test interface OK).");
+      alert("DIGIY est ouvert mais pas connecté à Firebase (ou salon non initialisé).");
       return;
     }
 
@@ -877,7 +927,7 @@
         timestamp: now
       });
 
-      await db.ref("chat/" + CHAT_ROOM_ID).update({
+      await db.ref("chat/" + currentChatId).update({
         proId: PRO_ID,
         userId: USER_ID,
         lastMessageAt: firebase.database.ServerValue.TIMESTAMP
@@ -885,7 +935,7 @@
 
       chatInputEl.value = "";
       chatInputEl.focus();
-      console.log("✅ Message envoyé dans RTDB.");
+      console.log("✅ Message envoyé dans RTDB pour", currentChatId);
     }catch(err){
       console.error("Erreur en envoyant dans RTDB:", err);
       alert("Erreur DIGIY CHAT (voir console).");
@@ -905,6 +955,10 @@
         sendDigiyMessage();
       }
     });
+  }
+
+  if (db) {
+    attachListenerForChat(currentChatId);
   }
 
   console.log("✅ Listeners attachés, DIGIY PRO CHAT prêt.");
