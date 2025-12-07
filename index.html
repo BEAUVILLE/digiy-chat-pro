@@ -823,5 +823,122 @@
     </div>
 </div>
 
+<!-- 🔥 BACKEND DIGIY CHAT PRO : FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+  import {
+    getFirestore, serverTimestamp, increment,
+    doc, getDoc, setDoc, addDoc, collection
+  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
+  // 💾 CONFIG FIREBASE — À REMPLACER PAR LA TIENNE
+  const firebaseConfig = {
+    apiKey: "TON_API_KEY",
+    authDomain: "TON_PROJET.firebaseapp.com",
+    projectId: "TON_PROJET",
+    storageBucket: "TON_PROJET.appspot.com",
+    messagingSenderId: "TON_SENDER_ID",
+    appId: "TON_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth();
+  signInAnonymously(auth).catch(console.error);
+
+  // Normalisation téléphone
+  function normalizePhone(phone) {
+    return phone.replace(/\D/g, "");
+  }
+
+  // 🔹 CONTACTS
+  async function upsertContact({ clientName, clientPhone }) {
+    const contactId = normalizePhone(clientPhone);
+    const ref = doc(db, "contacts", contactId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      await setDoc(ref, {
+        displayName: clientName,
+        phone: clientPhone,
+        lastSeenAt: serverTimestamp(),
+        totalRequests: increment(1)
+      }, { merge: true });
+    } else {
+      await setDoc(ref, {
+        displayName: clientName,
+        phone: clientPhone,
+        firstSeenAt: serverTimestamp(),
+        lastSeenAt: serverTimestamp(),
+        totalRequests: 1
+      });
+    }
+
+    return contactId;
+  }
+
+  // 🔹 CONSOMMATION PRO / JOUR
+  async function incrementProUsage({ proId, module }) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2,"0");
+    const dd = String(now.getDate()).padStart(2,"0");
+    const docId = `${proId}_${yyyy}${mm}${dd}`;
+
+    const ref = doc(db, "proUsageDaily", docId);
+
+    await setDoc(ref, {
+      proId,
+      date: `${yyyy}-${mm}-${dd}`,
+      totalRequests: increment(1),
+      [`moduleCounts.${module}`]: increment(1),
+      lastUpdatedAt: serverTimestamp()
+    }, { merge: true });
+  }
+
+  // 🔹 NOUVELLE DEMANDE PRO CHAT
+  async function createProChatRequest({
+    proId,
+    module,
+    clientName,
+    clientPhone,
+    shortMessage,
+    channel = "whatsapp"
+  }) {
+    const contactId = await upsertContact({ clientName, clientPhone });
+
+    const ref = await addDoc(collection(db, "proChatRequests"), {
+      proId,
+      module,
+      contactId,
+      clientName,
+      clientPhone,
+      shortMessage,
+      channel,
+      status: "nouveau",
+      createdAt: serverTimestamp(),
+      lastUpdatedAt: serverTimestamp()
+    });
+
+    await incrementProUsage({ proId, module });
+
+    console.log("🔥 Nouvelle demande enregistrée :", ref.id);
+  }
+
+  // 🔧 Petit test auto au chargement (tu peux le commenter après)
+  window.addEventListener("DOMContentLoaded", () => {
+    createProChatRequest({
+      proId: "LAMINE_DRIVER",
+      module: "driver",
+      clientName: "Test DIGIY",
+      clientPhone: "+221770000000",
+      shortMessage: "Test auto DIGIY CHAT PRO"
+    }).then(() => {
+      console.log("🚀 DIGIY CHAT PRO connecté à Firestore.");
+    }).catch(console.error);
+  });
+</script>
+
 </body>
 </html>
