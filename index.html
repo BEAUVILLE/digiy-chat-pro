@@ -1,434 +1,250 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
-    <meta name="theme-color" content="#020617">
+  <meta charset="UTF-8">
+  <title>DIGIY PRO CHAT — Realtime Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#020617;
+      --bg-soft:#02081a;
+      --accent:#f97316;
+      --accent-gold:#facc15;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+    }
 
-    <style>
-        :root{
-            --bg:#020617;
-            --bg-soft:#030712;
-            --card:#020617;
-            --card-soft:#030712;
-            --accent:#f97316;
-            --accent-soft:#fed7aa;
-            --accent-strong:#ea580c;
-            --accent-whatsapp:#22c55e;
-            --accent-call:#0ea5e9;
-            --ink:#f9fafb;
-            --ink-soft:#e5e7eb;
-            --muted:#9ca3af;
-            --line:#1f2937;
-            --danger:#ef4444;
-            --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
-            --radius-lg:24px;
-            --radius-md:18px;
-            --radius-pill:999px;
-        }
+    *{margin:0;padding:0;box-sizing:border-box;}
 
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
+    body{
+      min-height:100vh;
+      background:radial-gradient(circle at top,#0b1120,#020617 60%);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+    }
 
-        html{
-            font-size:16px;
-        }
+    .shell{
+      width:100%;
+      max-width:480px;
+      background:rgba(2,6,23,0.96);
+      border-radius:22px;
+      box-shadow:0 24px 70px rgba(0,0,0,0.85);
+      border:1px solid rgba(148,163,184,0.3);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
 
-        body{
-            min-height:100vh;
-            font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
-            color:var(--ink);
-            display:flex;
-            justify-content:center;
-            align-items:stretch;
-            padding:1.5rem;
-        }
+    .header{
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid rgba(148,163,184,0.25);
+      background:linear-gradient(135deg,#020617,#0b1120);
+    }
 
-        @media (max-width:768px){
-            body{
-                padding:0.75rem;
-            }
-        }
+    .avatar{
+      width:36px;height:36px;border-radius:999px;
+      background:radial-gradient(circle,#fed7aa,#f97316);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;font-size:18px;color:#111827;
+    }
 
-        .app{
-            width:100%;
-            max-width:1200px;
-            background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
-            border-radius:32px;
-            border:1px solid rgba(148,163,184,0.2);
-            box-shadow:var(--shadow-soft);
-            display:flex;
-            flex-direction:column;
-            overflow:hidden;
-            position:relative;
-        }
+    .head-meta{flex:1;display:flex;flex-direction:column;gap:2px;}
+    .head-title{font-size:15px;font-weight:800;text-transform:uppercase;}
+    .head-sub{font-size:11px;color:var(--muted);}
 
-        .app::before{
-            content:'';
-            position:absolute;
-            inset:-30%;
-            background:
-                radial-gradient(circle at 0 0,rgba(248,113,113,0.08),transparent 55%),
-                radial-gradient(circle at 100% 0,rgba(56,189,248,0.12),transparent 55%);
-            opacity:0.7;
-            pointer-events:none;
-        }
+    #chatMessages{
+      flex:1;padding:12px;overflow-y:auto;display:flex;
+      flex-direction:column;gap:6px;scroll-behavior:smooth;
+    }
 
-        /* HEADER */
-        .header{
-            position:relative;
-            z-index:1;
-            padding:1.25rem 1.75rem;
-            border-bottom:1px solid rgba(148,163,184,0.25);
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:1rem;
-        }
+    .msg-row{display:flex;width:100%;}
+    .msg-row.pro{justify-content:flex-end;}
+    .msg-row.user{justify-content:flex-start;}
 
-        .brand{
-            display:flex;
-            align-items:center;
-            gap:0.9rem;
-        }
+    .bubble{
+      max-width:75%;padding:10px 14px;border-radius:16px;
+      font-size:14px;line-height:1.4;white-space:pre-wrap;
+    }
 
-        .brand-logo{
-            width:44px;
-            height:44px;
-            border-radius:18px;
-            background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:#0b1120;
-            font-family:'Outfit',sans-serif;
-            font-weight:900;
-            font-size:1.5rem;
-            box-shadow:0 16px 40px rgba(248,113,22,0.7);
-            position:relative;
-            overflow:hidden;
-        }
+    .bubble.pro{
+      background:linear-gradient(135deg,#f97316,#facc15);
+      color:#111827;border-bottom-right-radius:5px;
+    }
 
-        .brand-logo::after{
-            content:'';
-            position:absolute;
-            inset:0;
-            background:radial-gradient(circle at 0 0,rgba(255,255,255,0.5),transparent 55%);
-            opacity:0.7;
-            mix-blend-mode:screen;
-        }
+    .bubble.user{
+      background:#02081a;color:#e5e7eb;
+      border:1px solid rgba(148,163,184,0.35);
+      border-bottom-left-radius:5px;
+    }
 
-        .brand-text-title{
-            font-family:'Outfit',sans-serif;
-            font-size:1.4rem;
-            font-weight:900;
-            letter-spacing:0.08em;
-            text-transform:uppercase;
-            background:linear-gradient(135deg,#f97316,#fed7aa);
-            -webkit-background-clip:text;
-            -webkit-text-fill-color:transparent;
-            background-clip:text;
-        }
+    .bubble-meta{font-size:10px;color:var(--muted);margin-top:2px;text-align:right;}
 
-        .brand-text-sub{
-            font-size:0.8rem;
-            color:var(--muted);
-            text-transform:uppercase;
-            letter-spacing:0.14em;
-            font-weight:600;
-        }
+    .footer{
+      border-top:1px solid rgba(148,163,184,0.25);
+      padding:8px;display:flex;align-items:center;gap:8px;
+      background:#020617;
+    }
 
-        .header-right{
-            display:flex;
-            align-items:center;
-            gap:0.75rem;
-        }
+    #messageInput{
+      flex:1;padding:10px 14px;border-radius:999px;
+      border:1px solid rgba(148,163,184,0.4);
+      background:#02081a;color:var(--text);font-size:14px;
+    }
 
-        .pill{
-            padding:0.4rem 0.9rem;
-            border-radius:var(--radius-pill);
-            border:1px solid rgba(148,163,184,0.5);
-            font-size:0.78rem;
-            text-transform:uppercase;
-            letter-spacing:0.12em;
-            color:var(--ink-soft);
-            display:flex;
-            align-items:center;
-            gap:0.35rem;
-            background:rgba(15,23,42,0.85);
-        }
-
-        .pill span.icon{
-            font-size:0.9rem;
-        }
-
-        .status-dot{
-            width:8px;
-            height:8px;
-            border-radius:999px;
-            background:var(--accent-whatsapp);
-            box-shadow:0 0 0 6px rgba(34,197,94,0.3);
-        }
-
-        @media (max-width:768px){
-            .header{
-                flex-direction:column;
-                align-items:flex-start;
-            }
-            .header-right{
-                width:100%;
-                justify-content:space-between;
-            }
-        }
-</style>
+    #sendBtn{
+      padding:10px 16px;border-radius:999px;border:none;
+      font-weight:700;font-size:11px;text-transform:uppercase;
+      background:linear-gradient(135deg,#f97316,#facc15);
+      color:#111827;cursor:pointer;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="shell">
 
-<div class="app">
-    <header class="header">
-        <div class="brand">
-            <div class="brand-logo">D</div>
-            <div>
-                <div class="brand-text-title">DIGIY PRO CHAT</div>
-                <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="pill">
-                <span class="icon">⚡</span>
-                <span>Mode démo</span>
-            </div>
-            <div class="pill">
-                <span class="status-dot"></span>
-                <span>En ligne</span>
-            </div>
-        </div>
-    </header>
-
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <span>Demandes clients</span>
-                    <span class="badge-counter">3 actifs</span>
-                </div>
-            </div>
-
-            <div class="filter-chips">
-                <span class="chip chip-active">Toutes</span>
-                <span class="chip">WhatsApp</span>
-                <span class="chip">Appels</span>
-                <span class="chip">Nouveaux</span>
-            </div>
-
-            <div class="chat-list">
-                <div class="chat-item chat-active">
-                    <div class="chat-avatar">F</div>
-                    <div class="chat-meta">
-                        <div class="chat-row-top">
-                            <div class="chat-name">Fama K. (Nouveau client)</div>
-                            <div class="chat-time">10:30</div>
-                        </div>
-                        <div class="chat-snippet">“Bonjour, c’est pour un transfert AIBD → Saly demain 14h…”</div>
-                        <div class="chat-tags">
-                            <span class="tag tag-new">Nouveau</span>
-                            <span class="tag tag-today">Aujourd'hui</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">M</div>
-                    <div class="chat-meta">
-                        <div class="chat-row-top">
-                            <div class="chat-name">Modou F. (AIBD → Saly)</div>
-                            <div class="chat-time">Hier</div>
-                        </div>
-                        <div class="chat-snippet">“OK pour 14h demain, je vous envoie le tarif et le lien de paiement…”</div>
-                        <div class="chat-tags">
-                            <span class="tag tag-wapp">WhatsApp</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-item">
-                    <div class="chat-avatar">A</div>
-                    <div class="chat-meta">
-                        <div class="chat-row-top">
-                            <div class="chat-name">Aïsha N. (Retour hôtel)</div>
-                            <div class="chat-time">24/11</div>
-                        </div>
-                        <div class="chat-snippet">“Parfait, c’est booké merci beaucoup 🙏”</div>
-                        <div class="chat-tags">
-                            <span class="tag">Client fidèle</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <main class="main">
-            <div class="main-header">
-                <div class="thread-info">
-                    <div class="thread-title">
-                        <span class="dot"></span>
-                        <span>Demande en cours</span>
-                    </div>
-                    <div class="thread-main">
-                        Fama K. — Transfert AIBD → Saly
-                    </div>
-                    <div class="thread-meta">
-                        Dernier message il y a 2 min • Canal recommandé : WhatsApp
-                    </div>
-                </div>
-
-                <div class="thread-actions">
-                    <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
-                        <span>💬</span>
-                        <span>Ouvrir dans WhatsApp</span>
-                    </a>
-                    <a href="tel:+221771342889" class="btn-sm btn-sm-call">
-                        <span>📞</span>
-                        <span>Appeler le client</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="messages">
-                <div class="msg-row client">
-                    <div>
-                        <div class="msg client">
-                            Bonjour Lamine, c’est pour un transfert AIBD vers Saly demain à 14h.
-                            Nous sommes 3 personnes avec 2 valises.
-                        </div>
-                        <div class="msg-meta">Client • 10:30</div>
-                    </div>
-                </div>
-
-                <div class="msg-row pro">
-                    <div>
-                        <div class="msg pro">
-                            Salam Fama 👋 Merci pour votre message. Oui disponible.  
-                            Pouvez-vous me confirmer l’heure exacte d’atterrissage + le nombre de bagages ?
-                        </div>
-                        <div class="msg-meta right">Vous • 10:32</div>
-                    </div>
-                </div>
-
-                <div class="msg-row client">
-                    <div>
-                        <div class="msg client">
-                            On atterrit à 13h20 insha’Allah.  
-                            2 grandes valises + 1 bagage cabine.
-                        </div>
-                        <div class="msg-meta">Client • 10:34</div>
-                    </div>
-                </div>
-
-                <div class="msg-row pro">
-                    <div>
-                        <div class="msg pro">
-                            Parfait ✅  
-                            Tarif AIBD → Saly : <strong>30.000 F tout compris</strong>.  
-                            Je peux vous envoyer le lien de paiement DIGIY PAY
-                            ou vous régler en cash à l’arrivée.
-                        </div>
-                        <div class="msg-meta right">Vous • 10:36</div>
-                    </div>
-                </div>
-
-                <div class="hint-banner">
-                    <span class="icon">💡</span>
-                    <div>
-                        <strong>Tip DIGIY :</strong> Finalisez toujours sur WhatsApp pour rassurer le client
-                        et sécuriser la conversation.  
-                        DIGIY PRO CHAT sert de tableau de bord et d’historique centralisé.
-                    </div>
-                </div>
-            </div>
-            <div class="input-bar">
-                <div class="input-fake">
-                    <span class="input-dot"></span>
-                    <span>Écrire une réponse… (le vrai message partira via WhatsApp ou appel)</span>
-                </div>
-                <div class="input-actions">
-                    <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
-                        <span>💬</span><span>WhatsApp</span>
-                    </a>
-                    <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">
-                        <span>📞</span><span>Appel</span>
-                    </a>
-                </div>
-            </div>
-
-        </main>
+    <div class="header">
+      <div class="avatar">P</div>
+      <div class="head-meta">
+        <div class="head-title">DIGIY PRO CHAT</div>
+        <div class="head-sub">Chat en direct</div>
+      </div>
     </div>
-</div>
-<!-- 🔥 DIGIY PRO CHAT — Connexion Firebase RTDB -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    set,
-    update,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-  // ⚙️ Config DIGIYLYFE
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
-    authDomain: "digiylyfe-ecosystem.firebaseapp.com",
-    databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "digiylyfe-ecosystem",
-    storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
-    messagingSenderId: "1007962643384",
-    appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
-  };
+    <div id="chatMessages"></div>
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+    <div class="footer">
+      <input id="messageInput" type="text" placeholder="Réponds au client..." autocomplete="off">
+      <button id="sendBtn">Envoyer</button>
+    </div>
 
-  // 🆔 Salon actuel (ton nœud existant dans RTDB)
-  const CHAT_ROOM_ID = "exemple-chat-1";
-  const PRO_ID       = "PRO_UID_001";
-  const USER_ID      = "USER_UID_001";
+  </div>
 
-  async function addDemoMessage() {
-    const t = serverTimestamp();
+  <script type="module">
+    // ----------------------------
+    // IMPORTS FIREBASE SDK
+    // ----------------------------
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onChildAdded,
+      update,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 🔄 Met à jour le salon sans rien casser
-    await update(ref(db, `chat/${CHAT_ROOM_ID}`), {
-      proId: PRO_ID,
-      userId: USER_ID,
-      lastMessageAt: t
+    // ----------------------------
+    // TA CONFIG FIREBASE INTÉGRÉE
+    // ----------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
+      authDomain: "digiylyfe-ecosystem.firebaseapp.com",
+      databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "digiylyfe-ecosystem",
+      storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
+      messagingSenderId: "1007962643384",
+      appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    // ----------------------------
+    // PARAMETRES DU CHAT
+    // ----------------------------
+    const CHAT_ID = "exemple-chat-1";
+    const PRO_ID  = "PRO_UID_001";
+
+    // ----------------------------
+    // UI SELECTORS
+    // ----------------------------
+    const chatMessagesEl = document.getElementById("chatMessages");
+    const inputEl        = document.getElementById("messageInput");
+    const sendBtn        = document.getElementById("sendBtn");
+
+    // ----------------------------
+    // FONCTIONS
+    // ----------------------------
+    function renderMessage(msg){
+      const isPro = msg.senderType === "pro";
+
+      const row = document.createElement("div");
+      row.className = "msg-row " + (isPro ? "pro" : "user");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble " + (isPro ? "pro" : "user");
+      bubble.textContent = msg.text;
+
+      const meta = document.createElement("div");
+      meta.className = "bubble-meta";
+      if (msg.timestamp){
+        const d = new Date(msg.timestamp);
+        meta.textContent = d.getHours().toString().padStart(2,"0") + ":" +
+                           d.getMinutes().toString().padStart(2,"0");
+      }
+
+      const wrap = document.createElement("div");
+      wrap.appendChild(bubble);
+      wrap.appendChild(meta);
+
+      row.appendChild(wrap);
+      chatMessagesEl.appendChild(row);
+
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    // ----------------------------
+    // LECTURE TEMPS RÉEL
+    // ----------------------------
+    const msgRef = ref(db, `chat/${CHAT_ID}/messages`);
+
+    onChildAdded(msgRef, (snap)=>{
+      const msg = snap.val();
+      if (msg) renderMessage(msg);
     });
 
-    // 💬 Ajoute un message dans chat/exemple-chat-1/messages
-    const msgRef = push(ref(db, `chat/${CHAT_ROOM_ID}/messages`));
-    await set(msgRef, {
-      from: "client",
-      text: "Test DIGIY PRO CHAT depuis la vitrine",
-      at: t
+    // ----------------------------
+    // ENVOI MESSAGE
+    // ----------------------------
+    async function sendMessage(){
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      const now = Date.now();
+
+      await push(msgRef, {
+        senderId: PRO_ID,
+        senderType: "pro",
+        text,
+        timestamp: now
+      });
+
+      await update(ref(db, `chat/${CHAT_ID}`), {
+        lastMessageAt: serverTimestamp()
+      });
+
+      inputEl.value = "";
+      inputEl.focus();
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    inputEl.addEventListener("keydown", (e)=>{
+      if (e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        sendMessage();
+      }
     });
 
-    console.log("🔥 Nouveau message Firebase :", msgRef.key);
-  }
-
-  // 🚀 Envoie auto au chargement de la page (pour tester la connexion)
-  window.addEventListener("DOMContentLoaded", addDemoMessage);
-</script>
+  </script>
 
 </body>
 </html>
