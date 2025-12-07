@@ -206,6 +206,9 @@
             .layout{
                 grid-template-columns:1fr;
             }
+            .sidebar{
+                display:none;
+            }
         }
 
         /* SIDEBAR */
@@ -216,12 +219,6 @@
             display:flex;
             flex-direction:column;
             gap:0.75rem;
-        }
-
-        @media (max-width:900px){
-            .sidebar{
-                display:none; /* tu pourras adapter plus tard */
-            }
         }
 
         .sidebar-header{
@@ -743,7 +740,7 @@
                     </div>
                 </div>
                 <div class="input-actions">
-                    <button id="sendDigiyBtn" class="btn-cta-mini btn-send-digiy">
+                    <button id="sendDigiyBtn" type="button" class="btn-cta-mini btn-send-digiy">
                         💾 DIGIY
                     </button>
                     <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
@@ -759,20 +756,12 @@
     </div>
 </div>
 
-<!-- 🔥 DIGIY PRO CHAT — Connexion Firebase RTDB (LECTURE + ÉCRITURE) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    set,
-    update,
-    onChildAdded,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+<!-- 🔥 Firebase compat (plus simple, pas de type="module") -->
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
 
-  // ⚙️ Config DIGIYLYFE
+<script>
+  // ⚙️ Config DIGIYLYFE (ta vraie config)
   const firebaseConfig = {
     apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
     authDomain: "digiylyfe-ecosystem.firebaseapp.com",
@@ -783,10 +772,9 @@
     appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  // 🆔 Salon actuel (ton nœud existant dans RTDB)
   const CHAT_ROOM_ID = "exemple-chat-1";
   const PRO_ID       = "PRO_UID_001";
   const USER_ID      = "USER_UID_001";
@@ -804,12 +792,12 @@
   }
 
   function renderMessage(msg){
-    // Compatibilité ancien format {from, text, at} ET nouveau {senderId, senderType, text, timestamp}
     const senderType = msg.senderType || msg.from || "client";
     const text       = msg.text || "";
     const ts         = msg.timestamp || msg.at || null;
 
     const isClient = senderType === "user" || senderType === "client";
+
     const row = document.createElement("div");
     row.className = "msg-row " + (isClient ? "client" : "pro");
 
@@ -831,16 +819,16 @@
     messagesListEl.scrollTop = messagesListEl.scrollHeight;
   }
 
-  // 🔄 Ecoute TEMPS RÉEL des messages
-  const messagesRef = ref(db, `chat/${CHAT_ROOM_ID}/messages`);
+  // 🔄 Lecture temps réel
+  const messagesRef = db.ref("chat/" + CHAT_ROOM_ID + "/messages");
 
-  onChildAdded(messagesRef, (snap) => {
-    const msg = snap.val();
+  messagesRef.on("child_added", (snapshot) => {
+    const msg = snapshot.val();
     if (!msg) return;
     renderMessage(msg);
   });
 
-  // 💾 Enregistrer une note / réponse PRO dans RTDB
+  // 💾 Envoi du message DIGIY (bouton)
   async function sendDigiyMessage(){
     const text = (chatInputEl.value || "").trim();
     if (!text) return;
@@ -849,19 +837,19 @@
 
     try{
       const now = Date.now();
-      const newRef = push(messagesRef);
+      const newRef = messagesRef.push();
 
-      await set(newRef, {
+      await newRef.set({
         senderId: PRO_ID,
         senderType: "pro",
         text,
         timestamp: now
       });
 
-      await update(ref(db, `chat/${CHAT_ROOM_ID}`), {
+      await db.ref("chat/" + CHAT_ROOM_ID).update({
         proId: PRO_ID,
         userId: USER_ID,
-        lastMessageAt: serverTimestamp()
+        lastMessageAt: firebase.database.ServerValue.TIMESTAMP
       });
 
       chatInputEl.value = "";
@@ -881,7 +869,6 @@
       sendDigiyMessage();
     }
   });
-
 </script>
 
 </body>
