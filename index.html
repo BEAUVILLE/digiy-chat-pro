@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
+    <title>DIGIY CHAT PRO — Assistance & Clients</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
+    <meta name="description" content="DIGIY CHAT PRO — Canal client unifié : WhatsApp & Appels.">
     <meta name="theme-color" content="#020617">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
             --bg-soft:#030712;
             --card:#020617;
             --card-soft:#030712;
-            --accent:#f97316; /* orange vif */
+            --accent:#f97316;
             --accent-soft:#fed7aa;
             --accent-strong:#ea580c;
             --accent-whatsapp:#22c55e;
@@ -84,7 +84,6 @@
             pointer-events:none;
         }
 
-        /* HEADER */
         .header{
             position:relative;
             z-index:1;
@@ -191,7 +190,6 @@
             }
         }
 
-        /* LAYOUT */
         .layout{
             position:relative;
             z-index:1;
@@ -209,7 +207,6 @@
             }
         }
 
-        /* SIDEBAR */
         .sidebar{
             border-right:1px solid rgba(30,64,175,0.4);
             background:radial-gradient(circle at 0 0,#020617 0,#020617 50%,#020617 100%);
@@ -398,7 +395,6 @@
             font-weight:600;
         }
 
-        /* MAIN CHAT PANEL */
         .main{
             background:radial-gradient(circle at top,#020617,#020617 55%);
             display:flex;
@@ -470,23 +466,21 @@
             display:flex;
             align-items:center;
             gap:0.3rem;
+            text-decoration:none;
         }
 
         .btn-sm-whatsapp{
             border-color:var(--accent-whatsapp);
             color:var(--accent-soft);
             background:rgba(22,163,74,0.16);
-            text-decoration:none;
         }
 
         .btn-sm-call{
             border-color:var(--accent-call);
             color:#bae6fd;
             background:rgba(12,74,110,0.85);
-            text-decoration:none;
         }
 
-        /* MESSAGES */
         .messages{
             flex:1;
             padding:1.1rem 1.5rem;
@@ -570,7 +564,6 @@
             margin-top:0.05rem;
         }
 
-        /* INPUT BAR (FAKE) */
         .input-bar{
             padding:0.8rem 1.2rem 1.1rem;
             border-top:1px solid rgba(30,64,175,0.5);
@@ -659,8 +652,8 @@
         <div class="brand">
             <div class="brand-logo">D</div>
             <div>
-                <div class="brand-text-title">DIGIY PRO CHAT</div>
-                <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
+                <div class="brand-text-title">DIGIY CHAT PRO</div>
+                <div class="brand-text-sub">Assistance & Clients • WhatsApp & appels</div>
             </div>
         </div>
         <div class="header-right">
@@ -751,7 +744,7 @@
                     </div>
                 </div>
                 <div class="thread-actions">
-                    <a id="btn-wa-main" href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
+                    <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
                         <span>💬</span>
                         <span>Ouvrir dans WhatsApp</span>
                     </a>
@@ -807,7 +800,7 @@
                     <span class="icon">💡</span>
                     <div>
                         <strong>Tip DIGIY :</strong> Finalisez toujours sur WhatsApp pour rassurer le client et sécuriser la conversation.  
-                        DIGIY PRO CHAT sert de tableau de bord et d’historique centralisé.
+                        DIGIY CHAT PRO sert de tableau de bord et d’historique centralisé.
                     </div>
                 </div>
             </div>
@@ -818,7 +811,7 @@
                     <span>Écrire une réponse… (le vrai message partira ensuite via WhatsApp ou appel)</span>
                 </div>
                 <div class="input-actions">
-                    <a id="btn-wa-footer" href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
+                    <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">
                         <span>💬</span><span>WhatsApp</span>
                     </a>
                     <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">
@@ -829,156 +822,6 @@
         </main>
     </div>
 </div>
-
-<!-- SCRIPT DIGIY PRO CHAT + FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import {
-    getFirestore, doc, getDoc, setDoc, addDoc,
-    collection, serverTimestamp, increment
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-  import {
-    getAuth, signInAnonymously
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-
-  // 🔥 CONFIG FIREBASE À REMPLACER PAR LA TIENNE
-  const firebaseConfig = {
-    apiKey: "TA_API_KEY",
-    authDomain: "TON-PROJET.firebaseapp.com",
-    projectId: "TON-PROJET",
-    storageBucket: "TON-PROJET.appspot.com",
-    messagingSenderId: "XXX",
-    appId: "XXX"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // Connexion anonyme pour PRO CHAT (DEV)
-  signInAnonymously(auth).catch((err) => {
-    console.error("Erreur auth anonyme DIGIY PRO CHAT:", err);
-  });
-
-  function normalizePhone(phone) {
-    if (!phone) return "";
-    return phone.replace(/\D/g, "");
-  }
-
-  async function upsertContact({ clientName, clientPhone }) {
-    const contactId = normalizePhone(clientPhone);
-    if (!contactId) {
-      throw new Error("Téléphone client invalide");
-    }
-
-    const ref = doc(db, "contacts", contactId);
-    const snap = await getDoc(ref);
-
-    if (snap.exists()) {
-      await setDoc(ref, {
-        displayName: clientName || snap.data().displayName || "",
-        phone: clientPhone,
-        lastSeenAt: serverTimestamp(),
-        totalRequests: increment(1)
-      }, { merge: true });
-    } else {
-      await setDoc(ref, {
-        displayName: clientName || "",
-        phone: clientPhone,
-        firstSeenAt: serverTimestamp(),
-        lastSeenAt: serverTimestamp(),
-        totalRequests: 1
-      });
-    }
-
-    return contactId;
-  }
-
-  async function incrementProUsage({ proId, module }) {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate() + 0).padStart(2, "0");
-    const docId = `${proId}_${yyyy}${mm}${dd}`;
-
-    const ref = doc(db, "proUsageDaily", docId);
-
-    await setDoc(ref, {
-      proId,
-      date: `${yyyy}-${mm}-${dd}`,
-      totalRequests: increment(1),
-      [`moduleCounts.${module}`]: increment(1),
-      lastUpdatedAt: serverTimestamp()
-    }, { merge: true });
-  }
-
-  async function createProChatRequest({
-    proId,
-    module,
-    clientName,
-    clientPhone,
-    shortMessage,
-    channel = "whatsapp",
-    sourcePage = "digiy-pro-chat"
-  }) {
-
-    const contactId = await upsertContact({ clientName, clientPhone });
-
-    await addDoc(collection(db, "proChatRequests"), {
-      proId,
-      module,
-      contactId,
-      clientName: clientName || "",
-      clientPhone,
-      shortMessage,
-      channel,
-      status: "nouveau",
-      sourcePage,
-      createdAt: serverTimestamp(),
-      lastUpdatedAt: serverTimestamp()
-    });
-
-    await incrementProUsage({ proId, module });
-  }
-
-  // Branche les boutons WhatsApp sur la création de demande
-  window.addEventListener("DOMContentLoaded", () => {
-    const mainWaBtn = document.getElementById("btn-wa-main");
-    const footerWaBtn = document.getElementById("btn-wa-footer");
-
-    const proId = "LAMINE_DRIVER";     // 👉 À adapter à ton UID pro réel
-    const moduleKey = "driver";
-
-    async function handleWhatsAppClick(source) {
-      try {
-        await createProChatRequest({
-          proId,
-          module: moduleKey,
-          clientName: "Fama K. (Nouveau client)",
-          clientPhone: "+221771342889",
-          shortMessage: "Transfert AIBD → Saly demain 14h, 3 pers, 2 valises.",
-          channel: "whatsapp",
-          sourcePage: source
-        });
-        console.log("🔥 Demande PRO CHAT enregistrée (" + source + ")");
-      } catch (err) {
-        console.error("Erreur création demande DIGIY PRO CHAT:", err);
-      }
-    }
-
-    if (mainWaBtn) {
-      mainWaBtn.addEventListener("click", () => {
-        handleWhatsAppClick("prochat_main_whatsapp");
-      });
-    }
-
-    if (footerWaBtn) {
-      footerWaBtn.addEventListener("click", () => {
-        handleWhatsAppClick("prochat_footer_whatsapp");
-      });
-    }
-  });
-</script>
 
 </body>
 </html>
