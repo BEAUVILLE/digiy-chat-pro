@@ -3,226 +3,133 @@
 <head>
     <meta charset="utf-8">
     <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#020617">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root{
             --bg:#020617;
-            --bg-soft:#030712;
-            --card:#020617;
-            --card-soft:#030712;
-            --accent:#f97316;
-            --accent-soft:#fed7aa;
-            --accent-strong:#ea580c;
-            --accent-whatsapp:#22c55e;
-            --accent-call:#0ea5e9;
             --ink:#f9fafb;
-            --ink-soft:#e5e7eb;
             --muted:#9ca3af;
-            --line:#1f2937;
-            --danger:#ef4444;
-            --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
-            --radius-lg:24px;
-            --radius-md:18px;
-            --radius-pill:999px;
+            --accent:#f97316;
+            --accent-wa:#22c55e;
         }
 
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
-
-        html{
-            font-size:16px;
-        }
-
+        *{margin:0;padding:0;box-sizing:border-box;}
         body{
-            min-height:100vh;
-            font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
-            color:var(--ink);
+            background:#020617;
+            color:#f9fafb;
+            font-family:'Manrope',sans-serif;
             display:flex;
             justify-content:center;
-            align-items:stretch;
-            padding:1.5rem;
+            padding:20px;
         }
 
         .app{
             width:100%;
             max-width:1200px;
-            background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
-            border-radius:32px;
-            border:1px solid rgba(148,163,184,0.2);
-            box-shadow:var(--shadow-soft);
-            display:flex;
-            flex-direction:column;
+            background:#08101f;
+            border:1px solid #1e293b;
+            border-radius:18px;
             overflow:hidden;
-            position:relative;
         }
 
-        .header{
-            padding:1.25rem 1.75rem;
-            border-bottom:1px solid rgba(148,163,184,0.25);
+        header{
+            padding:20px;
+            border-bottom:1px solid #1e293b;
             display:flex;
-            align-items:center;
             justify-content:space-between;
+            align-items:center;
         }
 
         .brand{
             display:flex;
             align-items:center;
-            gap:0.9rem;
+            gap:12px;
         }
 
         .brand-logo{
-            width:44px;
-            height:44px;
-            border-radius:18px;
-            background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:#0b1120;
-            font-family:'Outfit',sans-serif;
-            font-weight:900;
-            font-size:1.5rem;
-        }
-
-        .brand-text-title{
+            width:42px;height:42px;
+            border-radius:16px;
             font-size:1.4rem;
             font-weight:900;
-            background:linear-gradient(135deg,#f97316,#fed7aa);
-            -webkit-background-clip:text;
-            -webkit-text-fill-color:transparent;
-        }
-
-        .header-right{
-            display:flex;
-            align-items:center;
-            gap:0.75rem;
-        }
-
-        .pill{
-            padding:0.4rem 0.9rem;
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.5);
-            font-size:0.78rem;
-            color:var(--ink-soft);
-            background:rgba(15,23,42,0.85);
-            display:flex;
-            gap:0.4rem;
-            align-items:center;
+            background:conic-gradient(#f97316,#facc15,#f97316);
+            display:flex;justify-content:center;align-items:center;
+            color:#020617;
         }
 
         .layout{
             display:grid;
             grid-template-columns:0.9fr 1.4fr;
-            min-height:520px;
+            min-height:500px;
         }
 
         .sidebar{
-            border-right:1px solid rgba(30,64,175,0.4);
-            display:flex;
-            flex-direction:column;
-        }
-
-        .sidebar-header{
-            padding:1rem 1.2rem;
-        }
-
-        .sidebar-title{
-            font-size:0.95rem;
-            color:var(--muted);
-        }
-
-        .chat-list{
-            flex:1;
-            overflow-y:auto;
-            padding:0.6rem;
+            border-right:1px solid #1e293b;
+            padding:20px;
         }
 
         .chat-item{
+            padding:12px;
+            background:#0f172a;
+            border-radius:12px;
+            margin-bottom:12px;
             display:flex;
-            gap:0.65rem;
-            padding:0.55rem 0.6rem;
-            border-radius:18px;
-            cursor:default;
-            margin-bottom:0.4rem;
-            background:rgba(15,23,42,0.6);
+            align-items:center;
+            gap:12px;
         }
 
         .chat-avatar{
-            width:36px;
-            height:36px;
-            border-radius:14px;
-            background:radial-gradient(circle at 0 0,#f97316,#facc15);
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            color:#0b1120;
+            width:32px;height:32px;
+            background:radial-gradient(#f97316,#facc15);
+            border-radius:12px;
+            color:#000;
+            display:flex;justify-content:center;align-items:center;
             font-weight:800;
         }
 
         .main{
+            padding:20px;
             display:flex;
             flex-direction:column;
-        }
-
-        .main-header{
-            padding:1rem 1.5rem;
-            border-bottom:1px solid rgba(30,64,175,0.4);
         }
 
         .messages{
             flex:1;
             overflow-y:auto;
-            padding:1.1rem 1.5rem;
-            display:flex;
-            flex-direction:column;
-            gap:0.6rem;
-        }
-
-        .msg-row{
-            display:flex;
+            padding-right:10px;
+            margin-bottom:20px;
         }
 
         .msg{
-            padding:0.7rem 0.9rem;
-            border-radius:18px;
-            max-width:75%;
-        }
-
-        .msg.client{
-            background:rgba(15,23,42,0.9);
-            border:1px solid rgba(51,65,85,0.9);
+            padding:12px 16px;
+            border-radius:12px;
+            max-width:70%;
+            margin-bottom:12px;
+            background:#0f172a;
         }
 
         .msg.pro{
-            background:linear-gradient(135deg,#f97316,#ea580c);
-            color:#0b1120;
-            font-weight:600;
+            background:#f97316;
+            color:#020617;
+            margin-left:auto;
         }
 
         .input-bar{
-            padding:1rem;
-            border-top:1px solid rgba(30,64,175,0.4);
+            padding:18px;
+            border-top:1px solid #1e293b;
             display:flex;
-            gap:0.4rem;
+            gap:10px;
         }
 
         .input-fake{
             flex:1;
-            background:rgba(15,23,42,0.9);
+            background:#0f172a;
+            padding:12px 16px;
             border-radius:999px;
-            padding:0.7rem 1rem;
-            color:var(--muted);
+            color:#9ca3af;
         }
     </style>
 </head>
@@ -231,44 +138,54 @@
 
 <div class="app">
 
-    <header class="header">
+    <header>
         <div class="brand">
             <div class="brand-logo">D</div>
             <div>
-                <div class="brand-text-title">DIGIY PRO CHAT</div>
-                <div style="font-size:0.8rem;color:var(--muted);">Canal client unifié • WhatsApp & Appels</div>
+                <div style="font-size:1.3rem;font-weight:900;">DIGIY PRO CHAT</div>
+                <div style="font-size:0.75rem;color:#9ca3af;">WhatsApp • Appels • Historique</div>
             </div>
         </div>
-        <div class="header-right">
-            <div class="pill">⚡ Mode démo</div>
-            <div class="pill">🟢 En ligne</div>
+
+        <div style="display:flex;gap:10px;">
+            <div style="padding:6px 14px;border:1px solid #334155;border-radius:999px;">⚡ Démo</div>
+            <div style="padding:6px 14px;border:1px solid #334155;border-radius:999px;">🟢 En ligne</div>
         </div>
     </header>
 
     <div class="layout">
+
         <!-- SIDEBAR -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">Demandes clients (Démo)</div>
+            <div class="chat-item">
+                <div class="chat-avatar">F</div>
+                <div>Fama K. (Nouveau client)</div>
             </div>
 
-            <div class="chat-list">
-                <div class="chat-item"><div class="chat-avatar">F</div><div>Fama K. (Nouveau client)</div></div>
-                <div class="chat-item"><div class="chat-avatar">M</div><div>Modou F. (AIBD → Saly)</div></div>
-                <div class="chat-item"><div class="chat-avatar">A</div><div>Aïsha N. (Retour hôtel)</div></div>
+            <div class="chat-item">
+                <div class="chat-avatar">M</div>
+                <div>Modou F. (AIBD → Saly)</div>
+            </div>
+
+            <div class="chat-item">
+                <div class="chat-avatar">A</div>
+                <div>Aïsha N. (Retour hôtel)</div>
             </div>
         </aside>
 
-        <!-- MAIN PANEL -->
+        <!-- MAIN -->
         <main class="main">
-            <div class="main-header">
-                <div style="font-size:1.1rem;font-weight:700;">Fama K. — Transfert AIBD → Saly</div>
-                <div style="font-size:0.8rem;color:var(--muted);">Dernier message il y a 2 min</div>
+
+            <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">
+                Fama K. — Transfert AIBD → Saly
+            </div>
+            <div style="font-size:0.8rem;color:#9ca3af;margin-bottom:20px;">
+                Dernier message il y a 2 min
             </div>
 
-            <div class="messages">
-                <div class="msg-row"><div class="msg client">Bonjour Lamine…</div></div>
-                <div class="msg-row" style="justify-content:flex-end;"><div class="msg pro">Salam Fama 👋</div></div>
+            <div class="messages" id="messages">
+                <div class="msg">Bonjour Lamine…</div>
+                <div class="msg pro">Salam Fama 👋</div>
             </div>
 
             <div class="input-bar">
@@ -276,63 +193,62 @@
             </div>
 
         </main>
+
     </div>
 </div>
 
-
-<!-- 🔥 SCRIPT FIREBASE CONNECTÉ À LA RTDB 🔥 -->
+<!-- 🔥🔥🔥 SCRIPT FIREBASE BRANCHÉ SUR RIDE_001 🔥🔥🔥 -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    set,
-    update,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+        getDatabase,
+        ref,
+        push,
+        set,
+        update,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
-    authDomain: "digiylyfe-ecosystem.firebaseapp.com",
-    databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "digiylyfe-ecosystem",
-    storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
-    messagingSenderId: "1007962643384",
-    appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
+        authDomain: "digiylyfe-ecosystem.firebaseapp.com",
+        databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "digiylyfe-ecosystem",
+        storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
+        messagingSenderId: "1007962643384",
+        appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
 
-  const CHAT_ROOM_ID = "exemple-chat-1";
-  const PRO_ID       = "PRO_UID_001";
-  const USER_ID      = "USER_UID_001";
+    // 🆔 On se branche sur TA course réelle
+    const RIDE_ID = "RIDE_001";          // le salon chat = ride
+    const PRO_ID  = "PRO_UID_002";       // driver
+    const USER_ID = "USER_UID_001";      // passager
 
-  async function addDemoMessage() {
-    const timestamp = serverTimestamp();
+    async function sendDemoMessage() {
+        const t = serverTimestamp();
 
-    await update(ref(db, `chat/${CHAT_ROOM_ID}`), {
-      proId: PRO_ID,
-      userId: USER_ID,
-      lastMessageAt: timestamp
-    });
+        // 🔄 Met à jour le salon chat/RIDE_001
+        await update(ref(db, `chat/${RIDE_ID}`), {
+            proId: PRO_ID,
+            userId: USER_ID,
+            lastMessageAt: t
+        });
 
-    const msgRef = push(ref(db, `chat/${CHAT_ROOM_ID}/messages`));
-    await set(msgRef, {
-      from: "client",
-      text: "Test DIGIY PRO CHAT depuis la vitrine",
-      at: timestamp
-    });
+        // 💬 Ajoute un message
+        const msgRef = push(ref(db, `chat/${RIDE_ID}/messages`));
+        await set(msgRef, {
+            from: "client",
+            text: "Test DIGIY PRO CHAT lié à RIDE_001",
+            at: t
+        });
 
-    console.log("🔥 Message ajouté :", msgRef.key);
-  }
+        console.log("🔥 Message ajouté dans chat/RIDE_001 :", msgRef.key);
+    }
 
-  window.addEventListener("DOMContentLoaded", () => {
-    addDemoMessage()
-      .then(() => console.log("🚀 CONNECTÉ À LA RTDB"))
-      .catch(err => console.error("❌ Erreur PRO CHAT :", err));
-  });
+    window.addEventListener("DOMContentLoaded", sendDemoMessage);
 </script>
 
 </body>
