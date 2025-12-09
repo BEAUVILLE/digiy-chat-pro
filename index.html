@@ -628,7 +628,7 @@
         <div class="header-right">
             <div class="pill">
                 <span class="icon">⚡</span>
-                <span>Mode direct</span>
+                <span>Mode démo</span>
             </div>
             <div class="pill">
                 <span class="status-dot"></span>
@@ -716,7 +716,7 @@
                         Fama K. — Transfert AIBD → Saly
                     </div>
                     <div class="thread-meta" id="threadMeta">
-                        Messages éphémères 24h • Pour l’archive longue durée, utilisez l’e-mail.
+                        Flux en temps réel DIGIY + WhatsApp (Supabase, messages 24h)
                     </div>
                 </div>
 
@@ -738,8 +738,8 @@
                 <div class="input-zone">
                     <textarea id="chatInput" placeholder="Écrire une note ou une réponse interne DIGIY…"></textarea>
                     <div class="input-hint">
-                        Historique interne DIGIY (Supabase), effacé automatiquement après 24h.  
-                        Pour les dossiers à garder : envoyez par e-mail.
+                        Notes internes DIGIY (messages visibles 24h max).  
+                        Pour parler au client : WhatsApp ou appel direct.
                     </div>
                 </div>
                 <div class="input-actions">
@@ -759,72 +759,62 @@
     </div>
 </div>
 
-<!-- Supabase JS (UMD) -->
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Supabase JS v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  console.log("🦅 DIGIY PRO CHAT — Premium First Class");
+  console.log("🦅 DIGIY PRO CHAT — Supabase ready");
 
   // 🔐 SUPABASE CONFIG
   const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
   const SUPABASE_PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
 
-  // ⏳ Durée de vie des messages (en heures)
-  const TTL_HOURS = 24;
-
-  // IDs DIGIY (à spécialiser plus tard)
-  const PRO_ID  = "PRO_UID_001";
+  // IDs DIGIY (à adapter plus tard)
+  const PRO_ID = "PRO_UID_001";
   const USER_ID = "USER_UID_001";
 
-  // Références DOM
   const messagesListEl = document.getElementById("messagesList");
   const chatInputEl    = document.getElementById("chatInput");
   const sendDigiyBtn   = document.getElementById("sendDigiyBtn");
   const chatListEl     = document.getElementById("chatList");
   const threadMainEl   = document.getElementById("threadMain");
 
-  let currentChatId   = "exemple-chat-1";
-  let currentChannel  = null;
-
-  // 🕒 Gestion du temps & TTL
-  function getCutoffDate() {
-    const now = new Date();
-    return new Date(now.getTime() - TTL_HOURS * 60 * 60 * 1000);
-  }
-
-  function getCutoffIso() {
-    return getCutoffDate().toISOString();
-  }
-
-  function isFresh(timestamp) {
-    if (!timestamp) return false;
-    const ts = new Date(timestamp);
-    return ts >= getCutoffDate();
-  }
+  let currentChatId = "exemple-chat-1";
+  let currentChannel = null;
 
   function formatTime(ts){
     if (!ts) return "";
     const d = new Date(ts);
     const hh = String(d.getHours()).padStart(2,"0");
     const mm = String(d.getMinutes()).padStart(2,"0");
-    return `${hh}:${mm}`;
+    return hh + ":" + mm;
   }
 
   function clearMessages(){
-    messagesListEl.innerHTML = "";
+    while (messagesListEl.firstChild) {
+      messagesListEl.removeChild(messagesListEl.firstChild);
+    }
+  }
+
+  function isExpired(msg){
+    if (!msg.expires_at) return false;
+    const now = new Date();
+    const exp = new Date(msg.expires_at);
+    return exp < now;
   }
 
   function renderMessage(msg){
-    const tsRaw = msg.timestamp || msg.created_at;
-    if (!isFresh(tsRaw)) {
+    if (!msg) return;
+    if (isExpired(msg)) {
+      // Message expiré → on ne l’affiche pas
       return;
     }
 
     const senderType = msg.sender_type || msg.senderType || msg.from || "client";
     const text       = msg.text || "";
-    const ts         = tsRaw;
+    const ts         = msg.timestamp || msg.created_at || null;
 
     const isClient = senderType === "user" || senderType === "client";
 
@@ -849,29 +839,30 @@
     messagesListEl.scrollTop = messagesListEl.scrollHeight;
   }
 
-  // 📥 Charger l’historique (24h max)
+  // 🔁 Charger l'historique depuis Supabase (messages non expirés)
   async function loadMessagesForChat(chatId){
     clearMessages();
     currentChatId = chatId;
 
-    const cutoffIso = getCutoffIso();
+    const nowIso = new Date().toISOString();
 
     const { data, error } = await supabaseClient
       .from("digiy_chat_messages")
       .select("*")
       .eq("chat_id", chatId)
-      .gte("timestamp", cutoffIso)
+      .gte("expires_at", nowIso)
       .order("timestamp", { ascending: true });
 
     if (error) {
       console.error("Erreur Supabase (load):", error);
+      alert("Erreur chargement DIGIY CHAT (voir console).");
       return;
     }
 
     (data || []).forEach(renderMessage);
   }
 
-  // 👂 Temps réel
+  // 👂 Temps réel pour le chat courant (ignore les messages expirés)
   function subscribeToChat(chatId){
     if (currentChannel) {
       supabaseClient.removeChannel(currentChannel);
@@ -903,7 +894,6 @@
     subscribeToChat(chatId);
   }
 
-  // 🧭 Sélection dans la sidebar
   function handleChatSelection(e){
     const item = e.target.closest(".chat-item");
     if (!item) return;
@@ -926,7 +916,7 @@
     chatListEl.addEventListener("click", handleChatSelection);
   }
 
-  // ✉️ Envoi d’un message interne DIGIY (éphémère 24h)
+  // ✉️ Envoi d'un message dans Supabase (avec expires_at automatique côté DB)
   async function sendDigiyMessage(){
     const text = (chatInputEl.value || "").trim();
     if (!text) return;
@@ -934,8 +924,6 @@
     sendDigiyBtn.disabled = true;
 
     try{
-      const nowIso = new Date().toISOString();
-
       const { error } = await supabaseClient
         .from("digiy_chat_messages")
         .insert({
@@ -943,12 +931,13 @@
           sender_id: PRO_ID,
           sender_type: "pro",
           text,
-          timestamp: nowIso
+          timestamp: new Date().toISOString()
+          // expires_at : laissé au DEFAULT de la DB (now() + 24h)
         });
 
       if (error) {
         console.error("Erreur Supabase (insert):", error);
-        alert("Erreur DIGIY CHAT (voir console).");
+        alert("Erreur DIGIY CHAT : " + (error.message || "voir console"));
         sendDigiyBtn.disabled = false;
         return;
       }
@@ -976,7 +965,7 @@
     });
   }
 
-  // 🚀 Init : premier salon + temps réel
+  // 🚀 Init : charger le premier chat + abonnement temps réel
   switchChat(currentChatId);
 </script>
 
