@@ -13,8 +13,6 @@
   const userConfig = (window.DIGIY_CHAT_OPTIONS || {});
   const config = Object.assign({}, defaultConfig, userConfig);
 
-  // ... (tout le reste jusqu’à la fin)
-})();
   // INJECTION CSS
   function injectStyles() {
     if (document.getElementById("digiy-chat-pro-style")) return;
