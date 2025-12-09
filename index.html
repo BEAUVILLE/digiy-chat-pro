@@ -628,7 +628,7 @@
         <div class="header-right">
             <div class="pill">
                 <span class="icon">⚡</span>
-                <span>Mode déмо</span>
+                <span>Mode démo</span>
             </div>
             <div class="pill">
                 <span class="status-dot"></span>
@@ -654,7 +654,6 @@
             </div>
 
             <div class="chat-list" id="chatList">
-                <!-- Chaque item a maintenant un data-chat-id + data-label -->
                 <div class="chat-item chat-active"
                      data-chat-id="exemple-chat-1"
                      data-label="Fama K. — Transfert AIBD → Saly">
@@ -717,7 +716,7 @@
                         Fama K. — Transfert AIBD → Saly
                     </div>
                     <div class="thread-meta" id="threadMeta">
-                        Flux en temps réel DIGIY + WhatsApp
+                        Flux en temps réel DIGIY + WhatsApp (Supabase)
                     </div>
                 </div>
 
@@ -733,16 +732,13 @@
                 </div>
             </div>
 
-            <!-- 💬 Zone messages dynamique (RTDB) -->
-            <div class="messages" id="messagesList">
-                <!-- Messages injectés via Firebase pour le salon sélectionné -->
-            </div>
+            <div class="messages" id="messagesList"></div>
 
             <div class="input-bar">
                 <div class="input-zone">
                     <textarea id="chatInput" placeholder="Écrire une note ou une réponse interne DIGIY…"></textarea>
                     <div class="input-hint">
-                        Ce message alimente l’historique DIGIY (RTDB) pour ce client.  
+                        Ce message alimente l’historique DIGIY (Supabase) pour ce client.  
                         Pour parler directement au client : utilisez WhatsApp ou l’appel.
                     </div>
                 </div>
@@ -763,12 +759,21 @@
     </div>
 </div>
 
-<!-- 🔥 Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  console.log("🔥 DIGIY PRO CHAT — script chargé");
+  console.log("🦅 DIGIY PRO CHAT — Supabase ready");
+
+  // 🔐 SUPABASE CONFIG
+  const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
+  const SUPABASE_PUBLIC_KEY = "sb_publishable_2KVRayr3oWcewu0Y7xMkOQ_D6522h1E";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+
+  // IDs DIGIY (à adapter ensuite)
+  const PRO_ID = "PRO_UID_001";
+  const USER_ID = "USER_UID_001";
 
   const messagesListEl = document.getElementById("messagesList");
   const chatInputEl    = document.getElementById("chatInput");
@@ -776,41 +781,8 @@ script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.
   const chatListEl     = document.getElementById("chatList");
   const threadMainEl   = document.getElementById("threadMain");
 
-  if (!sendDigiyBtn) {
-    console.error("Bouton sendDigiyBtn introuvable dans le DOM.");
-  }
-
-  // ⚙️ Config DIGIYLYFE
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
-    authDomain: "digiylyfe-ecosystem.firebaseapp.com",
-    databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "digiylyfe-ecosystem",
-    storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
-    messagingSenderId: "1007962643384",
-    appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
-  };
-
-  const PRO_ID = "PRO_UID_001";
-  const USER_ID = "USER_UID_001";
-
-  let db = null;
-  let messagesRef = null;
   let currentChatId = "exemple-chat-1";
-  let currentListener = null;
-
-  if (typeof firebase === "undefined") {
-    console.error("❌ Firebase N’EST PAS chargé.");
-  } else {
-    try {
-      console.log("✅ Firebase trouvé, initialisation…");
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      console.log("✅ Firebase DB initialisée.");
-    } catch (err) {
-      console.error("❌ Erreur à l'initialisation Firebase:", err);
-    }
-  }
+  let currentChannel = null;
 
   function formatTime(ts){
     if (!ts) return "";
@@ -820,10 +792,16 @@ script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.
     return hh + ":" + mm;
   }
 
+  function clearMessages(){
+    while (messagesListEl.firstChild) {
+      messagesListEl.removeChild(messagesListEl.firstChild);
+    }
+  }
+
   function renderMessage(msg){
-    const senderType = msg.senderType || msg.from || "client";
+    const senderType = msg.sender_type || msg.senderType || msg.from || "client";
     const text       = msg.text || "";
-    const ts         = msg.timestamp || msg.at || null;
+    const ts         = msg.timestamp || msg.created_at || null;
 
     const isClient = senderType === "user" || senderType === "client";
 
@@ -848,34 +826,56 @@ script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.
     messagesListEl.scrollTop = messagesListEl.scrollHeight;
   }
 
-  function clearMessages(){
-    while (messagesListEl.firstChild) {
-      messagesListEl.removeChild(messagesListEl.firstChild);
-    }
-  }
+  // 🔁 Charger l'historique depuis Supabase
+  async function loadMessagesForChat(chatId){
+    clearMessages();
+    currentChatId = chatId;
 
-  function attachListenerForChat(chatId){
-    if (!db) {
-      console.warn("DB indisponible, pas de listener.");
+    const { data, error } = await supabaseClient
+      .from("digiy_chat_messages")
+      .select("*")
+      .eq("chat_id", chatId)
+      .order("timestamp", { ascending: true });
+
+    if (error) {
+      console.error("Erreur Supabase (load):", error);
       return;
     }
 
-    if (messagesRef && currentListener) {
-      messagesRef.off("child_added", currentListener);
+    (data || []).forEach(renderMessage);
+  }
+
+  // 👂 Temps réel pour le chat courant
+  function subscribeToChat(chatId){
+    // on coupe l'ancien canal si besoin
+    if (currentChannel) {
+      supabaseClient.removeChannel(currentChannel);
+      currentChannel = null;
     }
 
-    currentChatId = chatId;
-    messagesRef = db.ref("chat/" + currentChatId + "/messages");
-    clearMessages();
+    currentChannel = supabaseClient
+      .channel("digiy-chat-" + chatId)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "digiy_chat_messages",
+          filter: "chat_id=eq." + chatId
+        },
+        (payload) => {
+          const msg = payload.new;
+          renderMessage(msg);
+        }
+      )
+      .subscribe((status) => {
+        console.log("Canal temps réel", chatId, "→", status);
+      });
+  }
 
-    currentListener = (snapshot) => {
-      const msg = snapshot.val();
-      if (!msg) return;
-      renderMessage(msg);
-    };
-
-    messagesRef.on("child_added", currentListener);
-    console.log("👂 Listener attaché pour", currentChatId);
+  async function switchChat(chatId){
+    await loadMessagesForChat(chatId);
+    subscribeToChat(chatId);
   }
 
   function handleChatSelection(e){
@@ -893,51 +893,42 @@ script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.
       threadMainEl.textContent = label;
     }
 
-    attachListenerForChat(chatId);
+    switchChat(chatId);
   }
 
   if (chatListEl) {
     chatListEl.addEventListener("click", handleChatSelection);
   }
 
+  // ✉️ Envoi d'un message dans Supabase
   async function sendDigiyMessage(){
-    console.log("👉 Clic sur DIGIY pour", currentChatId);
-
     const text = (chatInputEl.value || "").trim();
-    if (!text) {
-      console.log("Message vide, on ne fait rien.");
-      return;
-    }
-
-    if (!db || !messagesRef) {
-      alert("DIGIY est ouvert mais pas connecté à Firebase (ou salon non initialisé).");
-      return;
-    }
+    if (!text) return;
 
     sendDigiyBtn.disabled = true;
 
     try{
-      const now = Date.now();
-      const newRef = messagesRef.push();
+      const { error } = await supabaseClient
+        .from("digiy_chat_messages")
+        .insert({
+          chat_id: currentChatId,
+          sender_id: PRO_ID,
+          sender_type: "pro",
+          text,
+          timestamp: new Date().toISOString()
+        });
 
-      await newRef.set({
-        senderId: PRO_ID,
-        senderType: "pro",
-        text,
-        timestamp: now
-      });
-
-      await db.ref("chat/" + currentChatId).update({
-        proId: PRO_ID,
-        userId: USER_ID,
-        lastMessageAt: firebase.database.ServerValue.TIMESTAMP
-      });
+      if (error) {
+        console.error("Erreur Supabase (insert):", error);
+        alert("Erreur DIGIY CHAT (voir console).");
+        sendDigiyBtn.disabled = false;
+        return;
+      }
 
       chatInputEl.value = "";
       chatInputEl.focus();
-      console.log("✅ Message envoyé dans RTDB pour", currentChatId);
     }catch(err){
-      console.error("Erreur en envoyant dans RTDB:", err);
+      console.error("Erreur inattendue:", err);
       alert("Erreur DIGIY CHAT (voir console).");
     }finally{
       sendDigiyBtn.disabled = false;
@@ -957,11 +948,8 @@ script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.
     });
   }
 
-  if (db) {
-    attachListenerForChat(currentChatId);
-  }
-
-  console.log("✅ Listeners attachés, DIGIY PRO CHAT prêt.");
+  // 🚀 Init : charger le premier chat + abonnement temps réel
+  switchChat(currentChatId);
 </script>
 
 </body>
