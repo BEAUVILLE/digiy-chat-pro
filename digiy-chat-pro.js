@@ -1,6 +1,6 @@
 // digiy-chat-pro.js
 (function () {
-  // CONFIG PAR DÉFAUT ...
+  // ⚙️ CONFIG PAR DÉFAUT (surchargée par window.DIGIY_CHAT_OPTIONS)
   const defaultConfig = {
     proChatUrl: "https://beauville.github.io/digiy-chat-pro/",
     whatsappNumber: "+221770000000",
@@ -13,7 +13,11 @@
   const userConfig = (window.DIGIY_CHAT_OPTIONS || {});
   const config = Object.assign({}, defaultConfig, userConfig);
 
-  // INJECTION CSS
+  let panel = null;
+  let backdrop = null;
+  let fab = null;
+
+  // 🧼 CSS PREMIUM
   function injectStyles() {
     if (document.getElementById("digiy-chat-pro-style")) return;
 
@@ -38,6 +42,17 @@
         font-weight: 600;
         cursor: pointer;
         border: none;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+        opacity: 0.98;
+      }
+      .digiy-chat-fab:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 50px rgba(15,23,42,0.85);
+        opacity: 1;
+      }
+      .digiy-chat-fab:active {
+        transform: translateY(0);
+        box-shadow: 0 14px 30px rgba(15,23,42,0.75);
       }
       .digiy-chat-fab-icon {
         width: 22px;
@@ -48,7 +63,7 @@
         align-items:center;
         justify-content:center;
         background:#0b1120;
-        color:#f97316;
+        color:${config.primaryColor};
         font-size: 13px;
       }
       .digiy-chat-fab-label-main {
@@ -57,6 +72,7 @@
       .digiy-chat-fab-label-sub {
         font-size: 10px;
         opacity: 0.85;
+        white-space: nowrap;
       }
 
       .digiy-chat-panel-backdrop {
@@ -66,6 +82,13 @@
         backdrop-filter: blur(4px);
         z-index: 99998;
         display: none;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+
+      .digiy-chat-panel-backdrop.digiy-open {
+        display: block;
+        opacity: 1;
       }
 
       .digiy-chat-panel {
@@ -84,6 +107,16 @@
         display: none;
         flex-direction: column;
         overflow: hidden;
+        transform: translateY(8px);
+        opacity: 0;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 99999;
+      }
+
+      .digiy-chat-panel.digiy-open {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
       }
 
       .digiy-chat-panel-header {
@@ -119,6 +152,8 @@
         color: #9ca3af;
         font-size: 18px;
         cursor: pointer;
+        padding: 4px 6px;
+        line-height: 1;
       }
 
       .digiy-chat-panel-body {
@@ -132,12 +167,14 @@
       .digiy-chat-panel-hint {
         font-size: 12px;
         color: #9ca3af;
+        margin-top: 4px;
       }
 
       .digiy-chat-panel-actions {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        margin-top: 8px;
       }
 
       .digiy-chat-btn {
@@ -151,6 +188,13 @@
         align-items: center;
         justify-content: space-between;
         cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      }
+
+      .digiy-chat-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(15,23,42,0.85);
+        background: #020712;
       }
 
       .digiy-chat-btn-main {
@@ -158,6 +202,10 @@
         color: #0b1120;
         border-color: transparent;
         font-weight: 700;
+      }
+
+      .digiy-chat-btn-main:hover {
+        background: linear-gradient(135deg, ${config.primaryColor}, #fde68a);
       }
 
       .digiy-chat-btn-label {
@@ -182,6 +230,7 @@
         border-radius: 999px;
         background: rgba(15,23,42,0.85);
         border: 1px solid rgba(15,23,42,0.8);
+        white-space: nowrap;
       }
 
       .digiy-chat-panel-footer {
@@ -196,22 +245,32 @@
       }
 
       @media (max-width: 640px) {
+        .digiy-chat-fab {
+          top: auto;
+          bottom: 18px;
+          right: 16px;
+        }
         .digiy-chat-panel {
           left: 10px;
           right: 10px;
-          top: 70px;
-          bottom: auto;
+          top: auto;
+          bottom: 90px;
           width: auto;
-          max-height: 70vh;
+          max-height: 60vh;
+        }
+        .digiy-chat-fab-label-sub {
+          display: none;
         }
       }
     `;
     document.head.appendChild(style);
   }
 
-  // BOUTON FLOTTANT
+  // 🎛 BOUTON FLOTTANT
   function createFab() {
-    const fab = document.createElement("button");
+    if (fab) return fab;
+
+    fab = document.createElement("button");
     fab.className = "digiy-chat-fab";
     fab.type = "button";
     fab.setAttribute("aria-label", "Ouvrir DIGIY PRO CHAT");
@@ -230,34 +289,40 @@
     return fab;
   }
 
-  let panel, backdrop;
-
-  // PANEL
+  // 🪟 PANEL
   function createPanel() {
+    if (panel && backdrop) return;
+
     backdrop = document.createElement("div");
     backdrop.className = "digiy-chat-panel-backdrop";
     backdrop.addEventListener("click", closePanel);
 
     panel = document.createElement("div");
     panel.className = "digiy-chat-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-label", "DIGIY PRO CHAT");
+
     panel.innerHTML = `
       <div class="digiy-chat-panel-header">
         <div class="digiy-chat-panel-title-block">
           <div class="digiy-chat-panel-title">${config.businessName}</div>
-          <div class="digiy-chat-panel-badge">DIGIY PRO CHAT — 0% Com</div>
+          <div class="digiy-chat-panel-badge">DIGIY PRO CHAT — 0% com, instantané</div>
         </div>
-        <button class="digiy-chat-panel-close" aria-label="Fermer">&times;</button>
+        <button class="digiy-chat-panel-close" aria-label="Fermer PRO CHAT">&times;</button>
       </div>
       <div class="digiy-chat-panel-body">
         <div>
-          <div><strong>Centralise les demandes clients</strong> et bascule ensuite sur WhatsApp ou en appel pour finaliser.</div>
-          <div class="digiy-chat-panel-hint">Choisis ton canal :</div>
+          <div><strong>Centralise les demandes clients</strong> dans DIGIY, puis finalise en direct sur WhatsApp ou par appel.</div>
+          <div class="digiy-chat-panel-hint">
+            Notes internes éphémères (24h max) côté DIGIY, conversations longues côté WhatsApp / email.
+          </div>
         </div>
         <div class="digiy-chat-panel-actions">
           <button type="button" class="digiy-chat-btn digiy-chat-btn-main" data-action="pro-chat">
             <div class="digiy-chat-btn-label">
               <span class="digiy-chat-btn-title">Ouvrir le tableau PRO CHAT</span>
-              <span class="digiy-chat-btn-sub">Voir les demandes récentes, statut, suivi</span>
+              <span class="digiy-chat-btn-sub">Voir les demandes récentes, statut, suivi en temps réel</span>
             </div>
             <span class="digiy-chat-btn-pill">Vue complète</span>
           </button>
@@ -265,7 +330,7 @@
           <button type="button" class="digiy-chat-btn" data-action="whatsapp">
             <div class="digiy-chat-btn-label">
               <span class="digiy-chat-btn-title">Continuer sur WhatsApp</span>
-              <span class="digiy-chat-btn-sub">Conversation direct avec le client</span>
+              <span class="digiy-chat-btn-sub">Message direct au client (conversation longue)</span>
             </div>
             <span class="digiy-chat-btn-pill">WhatsApp</span>
           </button>
@@ -273,14 +338,14 @@
           <button type="button" class="digiy-chat-btn" data-action="call">
             <div class="digiy-chat-btn-label">
               <span class="digiy-chat-btn-title">Appeler le client / le chauffeur</span>
-              <span class="digiy-chat-btn-sub">Pour confirmer une course ou une resa</span>
+              <span class="digiy-chat-btn-sub">Pour confirmer une course ou une réservation</span>
             </div>
             <span class="digiy-chat-btn-pill">Téléphone</span>
           </button>
         </div>
       </div>
       <div class="digiy-chat-panel-footer">
-        Propulsé par <span>DIGIYLYFE</span> — local, direct, 0% commission.
+        Propulsé par <span>DIGIYLYFE</span> — local, direct, souverain.
       </div>
     `;
 
@@ -301,26 +366,30 @@
     if (!panel || !backdrop) {
       createPanel();
     }
-    backdrop.style.display = "block";
-    panel.style.display = "flex";
+    backdrop.classList.add("digiy-open");
+    panel.classList.add("digiy-open");
   }
 
   function closePanel() {
-    if (backdrop) backdrop.style.display = "none";
-    if (panel) panel.style.display = "none";
+    if (backdrop) backdrop.classList.remove("digiy-open");
+    if (panel) panel.classList.remove("digiy-open");
   }
 
   function togglePanel() {
-    if (!panel || !backdrop || panel.style.display === "none") {
+    if (!panel || !backdrop || !panel.classList.contains("digiy-open")) {
       openPanel();
     } else {
       closePanel();
     }
   }
 
-  // ACTIONS
+  // 🎯 ACTIONS
   function handleAction(action) {
     if (action === "pro-chat") {
+      if (!config.proChatUrl) {
+        alert("URL du tableau PRO CHAT non configurée (proChatUrl).");
+        return;
+      }
       window.open(config.proChatUrl, "_blank", "noopener,noreferrer");
     } else if (action === "whatsapp") {
       const phone = (config.whatsappNumber || "").replace(/\D/g, "");
@@ -342,10 +411,21 @@
     }
   }
 
-  // INIT
+  // 🚀 INIT
   function init() {
+    if (document.body.dataset.digiyChatProInit === "1") return;
+    document.body.dataset.digiyChatProInit = "1";
+
     injectStyles();
     createFab();
+    createPanel();
+
+    // ESC pour fermer
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closePanel();
+      }
+    });
   }
 
   if (document.readyState === "loading") {
