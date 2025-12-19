@@ -1,251 +1,456 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#020617">
+  <meta charset="utf-8" />
+  <title>DIGIY PRO CHAT — Supabase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#020617" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        :root{
-            --bg:#020617;
-            --ink:#f9fafb;
-            --muted:#9ca3af;
-            --accent:#f97316;
-            --accent-wa:#22c55e;
-        }
+  <style>
+    :root{
+      --bg:#020617;
+      --panel:#08101f;
+      --line:#1e293b;
+      --ink:#f9fafb;
+      --muted:#9ca3af;
+      --accent:#f97316;
+      --gold:#facc15;
+      --ok:#22c55e;
+      --danger:#ef4444;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      background:
+        radial-gradient(circle at 12% 10%, rgba(249,115,22,.14), transparent 55%),
+        radial-gradient(circle at 88% 85%, rgba(250,204,21,.10), transparent 60%),
+        var(--bg);
+      color:var(--ink);
+      font-family:'Manrope',sans-serif;
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
+    .app{
+      width:100%;
+      max-width:1200px;
+      background:rgba(8,16,31,.92);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 18px 70px rgba(0,0,0,.55);
+    }
+    header{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      background:linear-gradient(135deg, rgba(11,18,34,.92), rgba(8,16,31,.92));
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:260px;}
+    .brand-logo{
+      width:42px;height:42px;border-radius:16px;
+      font-size:1.4rem;font-weight:900;
+      background:conic-gradient(var(--accent),var(--gold),var(--accent));
+      display:flex;justify-content:center;align-items:center;
+      color:#020617;font-family:'Outfit',sans-serif;
+      box-shadow:0 14px 34px rgba(249,115,22,.35);
+    }
+    .brand-title{font-size:1.15rem;font-weight:950;font-family:'Outfit',sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+    .brand-sub{font-size:.78rem;color:var(--muted);margin-top:2px;letter-spacing:.08em;text-transform:uppercase;}
 
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{
-            background:#020617;
-            color:#f9fafb;
-            font-family:'Manrope',sans-serif;
-            display:flex;
-            justify-content:center;
-            padding:20px;
-        }
+    .top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .pill{
+      padding:7px 12px;border:1px solid rgba(51,65,85,.95);
+      border-radius:999px;background:rgba(2,6,23,.35);
+      color:var(--muted);font-weight:800;font-size:.82rem;white-space:nowrap;
+    }
+    .pill b{color:var(--ink)}
+    .dot{display:inline-block;width:10px;height:10px;border-radius:99px;background:rgba(148,163,184,.55);margin-right:8px;vertical-align:middle;}
+    .dot.ok{background:var(--ok)}
+    .dot.bad{background:var(--danger)}
 
-        .app{
-            width:100%;
-            max-width:1200px;
-            background:#08101f;
-            border:1px solid #1e293b;
-            border-radius:18px;
-            overflow:hidden;
-        }
+    .btn{
+      border:none;border-radius:999px;padding:10px 14px;cursor:pointer;
+      font-weight:950;letter-spacing:.08em;text-transform:uppercase;
+      font-family:'Outfit',sans-serif;font-size:.78rem;display:inline-flex;align-items:center;gap:8px;
+    }
+    .btn.primary{background:linear-gradient(135deg,var(--accent),#ea580c);color:#111827;box-shadow:0 14px 30px rgba(249,115,22,.25);}
+    .btn.ghost{background:rgba(2,6,23,.35);color:var(--ink);border:1px solid rgba(148,163,184,.35);}
 
-        header{
-            padding:20px;
-            border-bottom:1px solid #1e293b;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
+    .layout{display:grid;grid-template-columns:0.95fr 1.45fr;min-height:620px;}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{border-right:none;border-bottom:1px solid var(--line);}}
 
-        .brand{
-            display:flex;
-            align-items:center;
-            gap:12px;
-        }
+    .sidebar{border-right:1px solid var(--line);padding:16px;background:rgba(2,6,23,.22);}
+    .sidebar-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;}
+    .room-input{
+      width:100%;border:1px solid rgba(148,163,184,.35);background:rgba(2,6,23,.35);color:var(--ink);
+      border-radius:14px;padding:10px 12px;outline:none;font-weight:800;
+    }
+    .room-input:focus{border-color:rgba(249,115,22,.75);box-shadow:0 0 0 3px rgba(249,115,22,.14);}
+    .hint{font-size:.82rem;color:rgba(203,213,225,.85);font-weight:700;margin-top:10px;}
+    .hint code{background:rgba(2,6,23,.35);border:1px solid rgba(148,163,184,.18);padding:2px 6px;border-radius:10px;color:#fff;}
 
-        .brand-logo{
-            width:42px;height:42px;
-            border-radius:16px;
-            font-size:1.4rem;
-            font-weight:900;
-            background:conic-gradient(#f97316,#facc15,#f97316);
-            display:flex;justify-content:center;align-items:center;
-            color:#020617;
-        }
+    .chat-item{
+      padding:12px;background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.18);
+      border-radius:14px;margin-top:10px;display:flex;align-items:center;gap:12px;cursor:pointer;
+      transition:transform .14s ease,border-color .14s ease;
+    }
+    .chat-item:hover{transform:translateY(-1px);border-color:rgba(249,115,22,.55);}
+    .chat-avatar{
+      width:34px;height:34px;background:radial-gradient(var(--accent),var(--gold));
+      border-radius:12px;color:#000;display:flex;justify-content:center;align-items:center;
+      font-weight:950;font-family:'Outfit',sans-serif;
+    }
+    .chat-meta{display:flex;flex-direction:column;gap:2px}
+    .chat-name{font-weight:900}
+    .chat-sub{font-size:.78rem;color:var(--muted);font-weight:700}
 
-        .layout{
-            display:grid;
-            grid-template-columns:0.9fr 1.4fr;
-            min-height:500px;
-        }
+    .main{padding:18px;display:flex;flex-direction:column;gap:10px;}
+    .main-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;
+      padding-bottom:10px;border-bottom:1px solid rgba(148,163,184,.18);
+    }
+    .h-title{font-size:1.08rem;font-weight:950;font-family:'Outfit',sans-serif;}
+    .h-sub{font-size:.82rem;color:var(--muted);font-weight:700;margin-top:3px;}
 
-        .sidebar{
-            border-right:1px solid #1e293b;
-            padding:20px;
-        }
+    .who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+    .tag{font-size:11px;color:rgba(203,213,225,.85);letter-spacing:.12em;text-transform:uppercase;font-weight:900;}
+    .select,.input{
+      border:1px solid rgba(148,163,184,.35);background:rgba(2,6,23,.35);color:var(--ink);
+      border-radius:14px;padding:10px 12px;outline:none;font-weight:800;
+    }
+    .select{padding:9px 10px}
+    .input::placeholder{color:rgba(156,163,175,.85)}
+    .select:focus,.input:focus{border-color:rgba(249,115,22,.75);box-shadow:0 0 0 3px rgba(249,115,22,.14);}
 
-        .chat-item{
-            padding:12px;
-            background:#0f172a;
-            border-radius:12px;
-            margin-bottom:12px;
-            display:flex;
-            align-items:center;
-            gap:12px;
-        }
+    .messages{flex:1;overflow:auto;padding:10px 4px 6px;scroll-behavior:smooth;}
+    .msg-row{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-width:78%;}
+    .msg-row.pro{margin-left:auto;align-items:flex-end;}
+    .msg-row.client{margin-right:auto;align-items:flex-start;}
+    .msg{
+      padding:12px 14px;border-radius:14px;background:rgba(15,23,42,.72);
+      border:1px solid rgba(148,163,184,.18);line-height:1.55;font-weight:700;white-space:pre-wrap;word-break:break-word;
+    }
+    .msg.pro{background:linear-gradient(135deg, rgba(249,115,22,.85), rgba(250,204,21,.35));color:#111827;border-color:rgba(249,115,22,.55);}
+    .msg-meta{font-size:11px;color:rgba(203,213,225,.75);font-weight:900;letter-spacing:.06em;text-transform:uppercase;}
 
-        .chat-avatar{
-            width:32px;height:32px;
-            background:radial-gradient(#f97316,#facc15);
-            border-radius:12px;
-            color:#000;
-            display:flex;justify-content:center;align-items:center;
-            font-weight:800;
-        }
-
-        .main{
-            padding:20px;
-            display:flex;
-            flex-direction:column;
-        }
-
-        .messages{
-            flex:1;
-            overflow-y:auto;
-            padding-right:10px;
-            margin-bottom:20px;
-        }
-
-        .msg{
-            padding:12px 16px;
-            border-radius:12px;
-            max-width:70%;
-            margin-bottom:12px;
-            background:#0f172a;
-        }
-
-        .msg.pro{
-            background:#f97316;
-            color:#020617;
-            margin-left:auto;
-        }
-
-        .input-bar{
-            padding:18px;
-            border-top:1px solid #1e293b;
-            display:flex;
-            gap:10px;
-        }
-
-        .input-fake{
-            flex:1;
-            background:#0f172a;
-            padding:12px 16px;
-            border-radius:999px;
-            color:#9ca3af;
-        }
-    </style>
+    .input-bar{padding:12px 0 0;display:flex;gap:10px;align-items:center;}
+  </style>
 </head>
 
 <body>
-
-<div class="app">
-
+  <div class="app">
     <header>
-        <div class="brand">
-            <div class="brand-logo">D</div>
-            <div>
-                <div style="font-size:1.3rem;font-weight:900;">DIGIY PRO CHAT</div>
-                <div style="font-size:0.75rem;color:#9ca3af;">WhatsApp • Appels • Historique</div>
-            </div>
+      <div class="brand">
+        <div class="brand-logo">D</div>
+        <div>
+          <div class="brand-title">DIGIY PRO CHAT</div>
+          <div class="brand-sub">Supabase • Temps réel</div>
         </div>
+      </div>
 
-        <div style="display:flex;gap:10px;">
-            <div style="padding:6px 14px;border:1px solid #334155;border-radius:999px;">⚡ Démo</div>
-            <div style="padding:6px 14px;border:1px solid #334155;border-radius:999px;">🟢 En ligne</div>
-        </div>
+      <div class="top-right">
+        <div class="pill"><span id="connDot" class="dot"></span><span id="connText">Connexion…</span></div>
+        <div class="pill">Room: <b id="roomText">—</b></div>
+        <button id="btnCopyLink" class="btn ghost" type="button">🔗 Copier lien</button>
+      </div>
     </header>
 
     <div class="layout">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="chat-item">
-                <div class="chat-avatar">F</div>
-                <div>Fama K. (Nouveau client)</div>
-            </div>
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div style="font-weight:950;font-family:'Outfit',sans-serif;letter-spacing:.08em;text-transform:uppercase;">Rooms</div>
+          <button id="btnApplyRoom" class="btn primary" type="button">Ouvrir</button>
+        </div>
 
-            <div class="chat-item">
-                <div class="chat-avatar">M</div>
-                <div>Modou F. (AIBD → Saly)</div>
-            </div>
+        <input id="roomInput" class="room-input" placeholder="Ex: RIDE_001 / resto-chez-baptiste" />
 
-            <div class="chat-item">
-                <div class="chat-avatar">A</div>
-                <div>Aïsha N. (Retour hôtel)</div>
-            </div>
-        </aside>
+        <div class="hint">Astuce : URL <code>?chat=RIDE_001</code></div>
 
-        <!-- MAIN -->
-        <main class="main">
+        <div id="quickRooms"></div>
+      </aside>
 
-            <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">
-                Fama K. — Transfert AIBD → Saly
-            </div>
-            <div style="font-size:0.8rem;color:#9ca3af;margin-bottom:20px;">
-                Dernier message il y a 2 min
-            </div>
+      <main class="main">
+        <div class="main-head">
+          <div>
+            <div class="h-title" id="mainTitle">Salon —</div>
+            <div class="h-sub">Historique + messages temps réel</div>
+          </div>
 
-            <div class="messages" id="messages">
-                <div class="msg">Bonjour Lamine…</div>
-                <div class="msg pro">Salam Fama 👋</div>
-            </div>
+          <div class="who">
+            <span class="tag">Mode</span>
+            <select id="modeSelect" class="select">
+              <option value="pro" selected>PRO</option>
+              <option value="client">CLIENT</option>
+            </select>
 
-            <div class="input-bar">
-                <div class="input-fake">Écrire une réponse…</div>
-            </div>
+            <span class="tag">Nom</span>
+            <input id="nameInput" class="input" placeholder="Ex: Lamine / Astou Boutique" maxlength="40" />
+          </div>
+        </div>
 
-        </main>
+        <div class="messages" id="messagesList" aria-live="polite"></div>
 
+        <div class="input-bar">
+          <input id="chatInput" class="input" style="flex:1" placeholder="Écrire un message…" autocomplete="off" />
+          <button id="sendBtn" class="btn primary" type="button">Envoyer →</button>
+        </div>
+
+        <div class="hint">Test : ouvre <code>?chat=RIDE_001</code> dans deux onglets (PRO/CLIENT).</div>
+      </main>
     </div>
-</div>
+  </div>
 
-<!-- 🔥🔥🔥 SCRIPT FIREBASE BRANCHÉ SUR RIDE_001 🔥🔥🔥 -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import {
-        getDatabase,
-        ref,
-        push,
-        set,
-        update,
-        serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBqEQWoE2iC7_rp-u4riilNVHolcP2o0B0",
-        authDomain: "digiylyfe-ecosystem.firebaseapp.com",
-        databaseURL: "https://digiylyfe-ecosystem-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "digiylyfe-ecosystem",
-        storageBucket: "digiylyfe-ecosystem.firebasestorage.app",
-        messagingSenderId: "1007962643384",
-        appId: "1:1007962643384:web:20d26881e87f0dc37d0d4d"
-    };
+    /* 🔐 SUPABASE — DÉJÀ POSÉ */
+    const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
 
-    // 🆔 On se branche sur TA course réelle
-    const RIDE_ID = "RIDE_001";          // le salon chat = ride
-    const PRO_ID  = "PRO_UID_002";       // driver
-    const USER_ID = "USER_UID_001";      // passager
+    const TABLE = "digiy_chat_messages";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false }
+    });
 
-    async function sendDemoMessage() {
-        const t = serverTimestamp();
+    const messagesList = document.getElementById("messagesList");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
 
-        // 🔄 Met à jour le salon chat/RIDE_001
-        await update(ref(db, `chat/${RIDE_ID}`), {
-            proId: PRO_ID,
-            userId: USER_ID,
-            lastMessageAt: t
+    const connDot = document.getElementById("connDot");
+    const connText = document.getElementById("connText");
+
+    const modeSelect = document.getElementById("modeSelect");
+    const nameInput = document.getElementById("nameInput");
+
+    const roomText = document.getElementById("roomText");
+    const mainTitle = document.getElementById("mainTitle");
+
+    const roomInput = document.getElementById("roomInput");
+    const btnApplyRoom = document.getElementById("btnApplyRoom");
+    const btnCopyLink = document.getElementById("btnCopyLink");
+    const quickRooms = document.getElementById("quickRooms");
+
+    const qs = new URLSearchParams(location.search);
+    const LS_KEY = "digiy_chat_identity_v1";
+
+    let CHAT_ID = (qs.get("chat") || "RIDE_001").trim();
+    let channel = null;
+
+    function safeJson(s){ try{ return JSON.parse(s); } catch { return null; } }
+    function randomId(prefix="id_"){ return prefix + Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+    const saved = safeJson(localStorage.getItem(LS_KEY)) || {};
+    let sender_type = saved.sender_type || (qs.get("mode") || "pro");
+    let sender_name = saved.sender_name || (qs.get("name") || "");
+    let sender_id = saved.sender_id || randomId("u_");
+
+    modeSelect.value = sender_type === "client" ? "client" : "pro";
+    nameInput.value = sender_name;
+    roomInput.value = CHAT_ID;
+
+    function setConn(ok, text){
+      connDot.classList.remove("ok","bad");
+      connDot.classList.add(ok ? "ok" : "bad");
+      connText.textContent = text;
+    }
+
+    function setRoomUI(){
+      roomText.textContent = CHAT_ID;
+      mainTitle.textContent = "Salon — " + CHAT_ID;
+      document.title = "DIGIY PRO CHAT — " + CHAT_ID;
+    }
+
+    function scrollDown(){
+      messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    function saveIdentity(){
+      sender_type = modeSelect.value === "client" ? "client" : "pro";
+      sender_name = (nameInput.value || "").trim();
+      localStorage.setItem(LS_KEY, JSON.stringify({ sender_type, sender_name, sender_id }));
+    }
+
+    function renderMessage(msg){
+      const row = document.createElement("div");
+      row.className = "msg-row " + (msg.sender_type === "pro" ? "pro" : "client");
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg " + (msg.sender_type === "pro" ? "pro" : "client");
+      bubble.textContent = (msg.text || "").toString();
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const who = msg.sender_name || (msg.sender_type === "pro" ? "PRO" : "CLIENT");
+      const time = msg.created_at ? new Date(msg.created_at).toLocaleString("fr-FR") : "";
+      meta.textContent = time ? `${who} • ${time}` : who;
+
+      row.appendChild(bubble);
+      row.appendChild(meta);
+      messagesList.appendChild(row);
+      scrollDown();
+    }
+
+    async function loadMessages(){
+      setConn(false, "Chargement…");
+      messagesList.innerHTML = "";
+
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select("*")
+        .eq("chat_id", CHAT_ID)
+        .order("created_at", { ascending: true })
+        .limit(500);
+
+      if(error){
+        console.error(error);
+        setConn(false, "Erreur (RLS/table)");
+        messagesList.innerHTML = `<div class="hint">⚠️ Lecture bloquée. Vérifie RLS sur <code>${TABLE}</code>.</div>`;
+        return;
+      }
+
+      (data || []).forEach(renderMessage);
+      setConn(true, "Connecté");
+    }
+
+    function startRealtime(){
+      if(channel){
+        supabase.removeChannel(channel);
+        channel = null;
+      }
+
+      channel = supabase
+        .channel("room_" + CHAT_ID)
+        .on("postgres_changes",
+          { event: "INSERT", schema: "public", table: TABLE },
+          (payload) => {
+            const msg = payload.new;
+            if(msg && msg.chat_id === CHAT_ID){
+              renderMessage(msg);
+            }
+          }
+        )
+        .subscribe((status) => {
+          if(status === "SUBSCRIBED") setConn(true, "Temps réel actif");
+        });
+    }
+
+    async function sendMessage(){
+      const text = (chatInput.value || "").trim();
+      if(!text) return;
+
+      saveIdentity();
+      sendBtn.disabled = true;
+
+      const { error } = await supabase
+        .from(TABLE)
+        .insert({
+          chat_id: CHAT_ID,
+          sender_id,
+          sender_type,
+          sender_name,
+          text
         });
 
-        // 💬 Ajoute un message
-        const msgRef = push(ref(db, `chat/${RIDE_ID}/messages`));
-        await set(msgRef, {
-            from: "client",
-            text: "Test DIGIY PRO CHAT lié à RIDE_001",
-            at: t
+      sendBtn.disabled = false;
+
+      if(error){
+        console.error(error);
+        alert("Envoi bloqué. Vérifie RLS/table Supabase.");
+        return;
+      }
+
+      chatInput.value = "";
+      chatInput.focus();
+    }
+
+    function buildQuickRooms(){
+      const presets = [
+        { id: "RIDE_001", label: "chauffeur" },
+        { id: "HUB_SUPPORT", label: "support" },
+        { id: "RESTO_DEMO", label: "resto" },
+      ];
+
+      quickRooms.innerHTML = "";
+      presets.forEach(p => {
+        const item = document.createElement("div");
+        item.className = "chat-item";
+        item.innerHTML = `
+          <div class="chat-avatar">${p.id.slice(0,1)}</div>
+          <div class="chat-meta">
+            <div class="chat-name">${p.id}</div>
+            <div class="chat-sub">${p.label}</div>
+          </div>
+        `;
+        item.addEventListener("click", () => {
+          roomInput.value = p.id;
+          applyRoom();
         });
+        quickRooms.appendChild(item);
+      });
+    }
 
-</script>
+    function applyRoom(){
+      const next = (roomInput.value || "").trim();
+      if(!next) return;
 
+      CHAT_ID = next;
+
+      const url = new URL(location.href);
+      url.searchParams.set("chat", CHAT_ID);
+      url.searchParams.set("mode", modeSelect.value);
+      const nm = (nameInput.value || "").trim();
+      if(nm) url.searchParams.set("name", nm);
+      history.replaceState({}, "", url.toString());
+
+      setRoomUI();
+      loadMessages();
+      startRealtime();
+    }
+
+    btnApplyRoom.addEventListener("click", applyRoom);
+    roomInput.addEventListener("keydown", (e) => { if(e.key === "Enter") applyRoom(); });
+
+    btnCopyLink.addEventListener("click", async () => {
+      saveIdentity();
+      const url = new URL(location.href);
+      url.searchParams.set("chat", CHAT_ID);
+      url.searchParams.set("mode", modeSelect.value);
+      const nm = (nameInput.value || "").trim();
+      if(nm) url.searchParams.set("name", nm);
+
+      try{
+        await navigator.clipboard.writeText(url.toString());
+        alert("Lien copié ✅");
+      } catch {
+        prompt("Copie le lien :", url.toString());
+      }
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+    chatInput.addEventListener("keydown", (e) => { if(e.key === "Enter") sendMessage(); });
+
+    modeSelect.addEventListener("change", saveIdentity);
+    nameInput.addEventListener("change", saveIdentity);
+
+    // BOOT
+    (function boot(){
+      setRoomUI();
+      buildQuickRooms();
+      saveIdentity();
+      loadMessages();
+      startRealtime();
+    })();
+  </script>
 </body>
 </html>
