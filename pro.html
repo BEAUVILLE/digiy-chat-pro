@@ -212,13 +212,13 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    /* 🔐 SUPABASE — DÉJÀ POSÉ */
+    /* 🔐 SUPABASE */
     const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
     const SUPABASE_ANON_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
-
     const TABLE = "digiy_chat_messages";
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false }
     });
@@ -245,7 +245,11 @@
     const LS_KEY = "digiy_chat_identity_v1";
 
     let CHAT_ID = (qs.get("chat") || "RIDE_001").trim();
+
+    // ✅ Realtime lock (anti boucle)
     let channel = null;
+    let isSubscribing = false;
+    let reconnectTimer = null;
 
     function safeJson(s){ try{ return JSON.parse(s); } catch { return null; } }
     function randomId(prefix="id_"){ return prefix + Math.random().toString(16).slice(2) + Date.now().toString(16); }
@@ -323,15 +327,28 @@
       setConn(true, "Connecté");
     }
 
+    // ✅ VERSION DÉFINITIVE : anti-boucle + reconnexion douce
     function startRealtime(){
+      if(isSubscribing) return;               // anti double-start
+      isSubscribing = true;
+
+      if(reconnectTimer){
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      // coupe l'ancien canal proprement
       if(channel){
-        supabase.removeChannel(channel);
+        try { supabase.removeChannel(channel); } catch(e){}
         channel = null;
       }
 
+      setConn(false, "Realtime…");
+
       channel = supabase
         .channel("room_" + CHAT_ID)
-        .on("postgres_changes",
+        .on(
+          "postgres_changes",
           { event: "INSERT", schema: "public", table: TABLE },
           (payload) => {
             const msg = payload.new;
@@ -340,8 +357,24 @@
             }
           }
         )
-        .subscribe((status) => {
-          if(status === "SUBSCRIBED") setConn(true, "Temps réel actif");
+        .subscribe((status, err) => {
+          console.log("Canal temps réel", CHAT_ID, "→", status, err || "");
+
+          if(status === "SUBSCRIBED"){
+            setConn(true, "Temps réel actif");
+            isSubscribing = false;
+            return;
+          }
+
+          if(status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
+            setConn(false, "Realtime instable…");
+            isSubscribing = false;
+
+            // reconnexion douce (évite boucle)
+            reconnectTimer = setTimeout(() => {
+              if(!document.hidden) startRealtime();
+            }, 1200);
+          }
         });
     }
 
@@ -404,6 +437,8 @@
       const next = (roomInput.value || "").trim();
       if(!next) return;
 
+      // évite de relancer si même room et déjà actif
+      const same = next === CHAT_ID;
       CHAT_ID = next;
 
       const url = new URL(location.href);
@@ -415,6 +450,7 @@
 
       setRoomUI();
       loadMessages();
+      // même si "same", on relance proprement (anti-boucle gère)
       startRealtime();
     }
 
