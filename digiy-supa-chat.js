@@ -1,90 +1,73 @@
-// 🔥 DIGIY CHAT PRO — SUPABASE EDITION
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0E1A" />
+  <title>DIGIY CHAT PRO</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+<body>
+  <div class="app">
+    <header class="top">
+      <a class="brand" href="https://digiylyfe.com" target="_blank" rel="noopener">
+        <span class="logo">∞</span>
+        <span class="titles">
+          <span class="t1">DIGIY CHAT PRO</span>
+          <span class="t2">Assistance & Clients • 0% commission</span>
+        </span>
+      </a>
 
-const supabase = createClient(
-  "https://wesqmwjjtsefyjnluosj.supabase.co",
-  "sb_publishable_2KVRayr3oWcewu0Y7xMkOQ_D6522h1E"
-);
+      <div class="right">
+        <div id="roomPill" class="pill">Room: <b>—</b></div>
+        <button id="btnCopyLink" class="btn ghost" type="button" title="Copier le lien de la room">🔗</button>
+        <button id="btnResetRoom" class="btn danger" type="button" title="Changer de room">♻️</button>
+      </div>
+    </header>
 
-const CHAT_ID = "exemple-chat-1";  // Tu vas changer ça plus tard
+    <main class="main">
+      <section class="panel">
+        <div class="panel-top">
+          <div class="status">
+            <span id="connDot" class="dot"></span>
+            <span id="connText">Connexion…</span>
+          </div>
 
-const messagesList = document.getElementById("messagesList");
-const input     = document.getElementById("chatInput");
-const sendBtn   = document.getElementById("sendDigiyBtn");
+          <div class="who">
+            <span class="tag">Mode</span>
+            <select id="modeSelect" class="select">
+              <option value="pro" selected>PRO</option>
+              <option value="client">CLIENT</option>
+            </select>
 
-// ⏳ Charger les messages existants
-async function loadMessages() {
-  const { data, error } = await supabase
-    .from("digiy_chat_messages")
-    .select("*")
-    .eq("chat_id", CHAT_ID)
-    .order("timestamp", { ascending: true });
+            <span class="tag">Nom</span>
+            <input id="nameInput" class="input" placeholder="Ex: Astou Boutique" maxlength="40" />
+          </div>
+        </div>
 
-  if (error) {
-    console.error("Erreur chargement messages :", error);
-    return;
-  }
+        <div id="messagesList" class="messages" aria-live="polite"></div>
 
-  messagesList.innerHTML = "";
+        <div class="composer">
+          <input id="chatInput" class="input grow" placeholder="Écris ton message…" autocomplete="off" />
+          <button id="sendDigiyBtn" class="btn primary" type="button">Envoyer →</button>
+        </div>
 
-  data.forEach(renderMessage);
-}
+        <div class="hint">
+          Astuce : ajoute <code>?chat=resto-chez-baptiste</code> dans l’URL pour une room dédiée.
+        </div>
+      </section>
+    </main>
 
-// 🟢 Écoute temps réel
-supabase.channel("room_" + CHAT_ID)
-  .on("postgres_changes",
-      { event: "INSERT", schema: "public", table: "digiy_chat_messages" },
-      (payload) => {
-        const msg = payload.new;
-        if (msg.chat_id === CHAT_ID) {
-          renderMessage(msg);
-        }
-      })
-  .subscribe();
+    <footer class="foot">
+      <a class="link" href="https://wa.me/221771342889" target="_blank" rel="noopener">WhatsApp</a>
+      <span class="sep">•</span>
+      <a class="link" href="https://beauville.github.io/digiy-hub/" target="_blank" rel="noopener">Retour HUB</a>
+      <span class="sep">•</span>
+      <span class="muted">DIGIYLYFE — Made in Sénégal 🦅</span>
+    </footer>
+  </div>
 
-// ✉️ Envoi d’un message DIGIY
-async function sendMessage() {
-  const text = input.value.trim();
-  if (!text) return;
-
-  const { error } = await supabase
-    .from("digiy_chat_messages")
-    .insert({
-      chat_id: CHAT_ID,
-      sender_id: "PRO_UID_001",
-      sender_type: "pro",
-      text: text
-    });
-
-  if (error) {
-    console.error("Erreur envoi message :", error);
-    return;
-  }
-
-  input.value = "";
-}
-
-sendBtn.addEventListener("click", sendMessage);
-
-function renderMessage(msg) {
-  const row = document.createElement("div");
-  row.className = "msg-row " + (msg.sender_type === "pro" ? "pro" : "client");
-
-  const bubble = document.createElement("div");
-  bubble.className = "msg " + (msg.sender_type === "pro" ? "pro" : "client");
-  bubble.textContent = msg.text;
-
-  const meta = document.createElement("div");
-  meta.className = "msg-meta" + (msg.sender_type === "pro" ? " right" : "");
-  meta.textContent = msg.sender_type === "pro" ? "Vous" : "Client";
-
-  row.appendChild(bubble);
-  row.appendChild(meta);
-  messagesList.appendChild(row);
-
-  messagesList.scrollTop = messagesList.scrollHeight;
-}
-
-// 🚀 Charger tout au démarrage
-loadMessages();
+  <script type="module" src="./digiy-supa-chat.js"></script>
+</body>
+</html>
