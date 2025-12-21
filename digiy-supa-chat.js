@@ -6,7 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /* 🔐 SUPABASE */
 const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
 const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
 const TABLE = "digiy_chat_messages";
 const LS_KEY = "digiy_chat_identity_v2";
@@ -29,7 +29,7 @@ const btnResetRoom = document.getElementById("btnResetRoom");
 /* URL params */
 const qs = new URLSearchParams(location.search);
 let CHAT_ID = (qs.get("chat") || "exemple-chat-1").trim();
-let ROOM_TOKEN = (qs.get("token") || "").trim();
+const ROOM_TOKEN = (qs.get("token") || "").trim();
 
 /* Identity */
 function safeJson(s){ try { return JSON.parse(s); } catch { return null; } }
@@ -47,16 +47,17 @@ if(nameInput) nameInput.value = sender_name;
 
 /* Client Supabase + coffre-fort */
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  auth: { persistSession: false },
   global: {
     headers: {
       // 🔐 utilisé par ta RLS / fonctions pour valider l’accès à la room
-      ...(ROOM_TOKEN ? { "x-digiy-room-token": ROOM_TOKEN } : {})
+      "x-digiy-room-token": ROOM_TOKEN
     }
   }
 });
 
 let channel = null;
+let sending = false;
 
 /* UI helpers */
 function setConn(ok, text){
@@ -86,24 +87,9 @@ function saveIdentity(){
   localStorage.setItem(LS_KEY, JSON.stringify({ sender_type, sender_name, sender_id }));
 }
 
-function escapeHtml(str){
-  return String(str ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
 /* Render */
 function renderMessage(msg){
   if(!msg || !messagesList) return;
-
-  // ✅ Filtre 24h (si expires_at existe)
-  if(msg.expires_at){
-    const exp = new Date(msg.expires_at);
-    if(exp < new Date()) return;
-  }
 
   const row = document.createElement("div");
   row.className = "msg-row " + (msg.sender_type === "pro" ? "pro" : "client");
@@ -129,67 +115,38 @@ async function loadMessages(){
   setConn(false, "Chargement…");
   if(messagesList) messagesList.innerHTML = "";
 
-  // Message clair si token requis chez toi
-  if(!ROOM_TOKEN){
-    // On ne bloque pas, mais on avertit (si ta RLS nécessite token)
-    console.warn("⚠️ ROOM_TOKEN absent. Si ta RLS exige token, la lecture/écriture sera bloquée.");
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("chat_id", CHAT_ID)
+    .order("created_at", { ascending: true })
+    .limit(500);
+
+  if(error){
+    console.error("loadMessages error:", error);
+    setConn(false, "Erreur accès (token/RLS)");
+    if(messagesList){
+      messagesList.innerHTML =
+        `<div class="hint">⚠️ Lecture bloquée. Vérifie le token (URL) + RLS sur <code>${TABLE}</code>.</div>`;
+    }
+    return;
   }
 
-  try{
-    // ✅ Si expires_at existe -> filtre "non expiré"
-    // Si la colonne n'existe pas, Supabase renvoie error => on refait sans filtre.
-    const nowIso = new Date().toISOString();
+  (data || []).forEach(renderMessage);
+  setConn(true, "Connecté");
+}
 
-    let q = supabase
-      .from(TABLE)
-      .select("*")
-      .eq("chat_id", CHAT_ID)
-      .order("created_at", { ascending: true })
-      .limit(500);
-
-    // tentative filtre expires_at (si colonne présente)
-    q = q.gte("expires_at", nowIso);
-
-    let { data, error } = await q;
-
-    if(error){
-      // fallback (si expires_at n'existe pas)
-      const { data: data2, error: error2 } = await supabase
-        .from(TABLE)
-        .select("*")
-        .eq("chat_id", CHAT_ID)
-        .order("created_at", { ascending: true })
-        .limit(500);
-
-      data = data2;
-      error = error2;
-    }
-
-    if(error){
-      console.error("loadMessages error:", error);
-      setConn(false, "Erreur accès (token/RLS)");
-      if(messagesList){
-        messagesList.innerHTML =
-          `<div class="hint">⚠️ Lecture bloquée. Vérifie le token (URL) + RLS sur <code>${escapeHtml(TABLE)}</code>.</div>`;
-      }
-      return;
-    }
-
-    (data || []).forEach(renderMessage);
-    setConn(true, "Connecté");
-  }catch(err){
-    console.error("loadMessages catch:", err);
-    setConn(false, "Erreur réseau");
+function stopRealtime(){
+  if(channel){
+    supabase.removeChannel(channel);
+    channel = null;
   }
 }
 
 function startRealtime(){
-  if(channel){
-    try{ supabase.removeChannel(channel); }catch(e){}
-    channel = null;
-  }
+  stopRealtime();
 
-  // ✅ Realtime filtré côté serveur sur chat_id
+  // ✅ Filtre DIRECT côté realtime (plus propre que recevoir tout puis filtrer)
   channel = supabase
     .channel("room_" + CHAT_ID)
     .on(
@@ -209,25 +166,25 @@ function startRealtime(){
       if(status === "SUBSCRIBED"){
         console.log(`Canal temps réel ${CHAT_ID} → SUBSCRIBED`);
         setConn(true, "Temps réel actif");
-      } else if(status === "TIMED_OUT"){
-        console.warn(`Canal temps réel ${CHAT_ID} → TIMED_OUT`);
-        setConn(false, "Realtime timeout");
       } else if(status === "CLOSED"){
         console.warn(`Canal temps réel ${CHAT_ID} → CLOSED`);
-        setConn(false, "Realtime fermé");
-      } else if(status === "CHANNEL_ERROR"){
-        console.warn(`Canal temps réel ${CHAT_ID} → CHANNEL_ERROR`);
-        setConn(false, "Realtime erreur");
+        setConn(false, "Déconnecté");
+      } else {
+        // CONNECTING / CHANNEL_ERROR possibles
+        console.log("Realtime status:", status);
       }
     });
 }
 
 /* Send */
 async function sendMessage(){
+  if(sending) return;
+
   const text = (chatInput?.value || "").trim();
   if(!text) return;
 
   saveIdentity();
+  sending = true;
   if(sendBtn) sendBtn.disabled = true;
 
   try{
@@ -239,8 +196,6 @@ async function sendMessage(){
         sender_type,
         sender_name,
         text
-        // created_at: default DB
-        // expires_at: default DB (now() + 24h) si tu l’as mis
       });
 
     if(error){
@@ -252,26 +207,30 @@ async function sendMessage(){
     chatInput.value = "";
     chatInput.focus();
   } finally {
+    sending = false;
     if(sendBtn) sendBtn.disabled = false;
   }
 }
 
-/* Buttons */
+/* Events */
 sendBtn?.addEventListener("click", sendMessage);
 
-// ✅ Enter envoie, Shift+Enter = nouvelle ligne
+// ✅ Mobile-safe: pas de double envoi, pas pendant composition (clavier)
 chatInput?.addEventListener("keydown", (e) => {
-  if(e.key === "Enter" && !e.shiftKey){
-    e.preventDefault();
-    sendMessage();
-  }
+  if(e.key !== "Enter") return;
+  if(e.isComposing) return;
+  if(e.repeat) return;
+  e.preventDefault();
+  sendMessage();
 });
 
 modeSelect?.addEventListener("change", saveIdentity);
 nameInput?.addEventListener("change", saveIdentity);
 
+/* Buttons */
 btnCopyLink?.addEventListener("click", async () => {
   saveIdentity();
+
   const url = new URL(location.href);
   url.searchParams.set("chat", CHAT_ID);
   url.searchParams.set("mode", sender_type);
@@ -294,7 +253,6 @@ btnResetRoom?.addEventListener("click", () => {
 
   const url = new URL(location.href);
   url.searchParams.set("chat", CHAT_ID);
-  if(ROOM_TOKEN) url.searchParams.set("token", ROOM_TOKEN);
   history.replaceState({}, "", url.toString());
 
   setRoomUI();
@@ -310,4 +268,3 @@ btnResetRoom?.addEventListener("click", () => {
   loadMessages();
   startRealtime();
 })();
-
