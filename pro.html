@@ -1,74 +1,152 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A0E1A" />
-  <title>DIGIY CHAT PRO</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
+<style>
+:root{
+  --bg:#020617;
+  --card:#030712;
+  --line:#1f2937;
+  --text:#f9fafb;
+  --muted:#9ca3af;
+  --accent:#f97316;
+  --accent-strong:#ea580c;
+  --ok:#22c55e;
+  --bad:#ef4444;
+}
 
-<body>
-  <div class="app">
-    <header class="top">
-      <a class="brand" href="https://digiylyfe.com" target="_blank" rel="noopener">
-        <span class="logo">∞</span>
-        <span class="titles">
-          <span class="t1">DIGIY CHAT PRO</span>
-          <span class="t2">Assistance & Clients • 0% commission</span>
-        </span>
-      </a>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:radial-gradient(circle at top,#1e293b 0,#020617 45%);
+  color:var(--text);
+}
 
-      <div class="right">
-        <div id="roomPill" class="pill">Room: <b>—</b></div>
-        <button id="btnCopyLink" class="btn ghost" type="button" title="Copier le lien de la room">🔗</button>
-        <button id="btnResetRoom" class="btn danger" type="button" title="Changer de room">♻️</button>
-      </div>
-    </header>
+.app{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
 
-    <main class="main">
-      <section class="panel">
-        <div class="panel-top">
-          <div class="status">
-            <span id="connDot" class="dot"></span>
-            <span id="connText">Connexion…</span>
-          </div>
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  background:rgba(2,6,23,.85);
+}
 
-          <div class="who">
-            <span class="tag">Mode</span>
-            <select id="modeSelect" class="select">
-              <option value="pro" selected>PRO</option>
-              <option value="client">CLIENT</option>
-            </select>
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:inherit;
+}
 
-            <span class="tag">Nom</span>
-            <input id="nameInput" class="input" placeholder="Ex: Astou Boutique" maxlength="40" />
-          </div>
-        </div>
+.logo{
+  width:40px;height:40px;
+  border-radius:14px;
+  display:grid;place-items:center;
+  font-weight:900;
+  background:linear-gradient(135deg,#facc15,#f97316);
+  color:#111;
+}
 
-        <div id="messagesList" class="messages" aria-live="polite"></div>
+.titles .t1{font-weight:900}
+.titles .t2{font-size:12px;color:var(--muted)}
 
-        <div class="composer">
-          <input id="chatInput" class="input grow" placeholder="Écris ton message…" autocomplete="off" />
-          <button id="sendDigiyBtn" class="btn primary" type="button">Envoyer →</button>
-        </div>
+.right{display:flex;gap:8px;align-items:center}
 
-        <div class="hint">
-          Astuce : ajoute <code>?chat=resto-chez-baptiste</code> dans l’URL pour une room dédiée.
-        </div>
-      </section>
-    </main>
+.main{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  padding:16px;
+}
 
-    <footer class="foot">
-      <a class="link" href="https://wa.me/221771342889" target="_blank" rel="noopener">WhatsApp</a>
-      <span class="sep">•</span>
-      <a class="link" href="https://beauville.github.io/digiy-hub/" target="_blank" rel="noopener">Retour HUB</a>
-      <span class="sep">•</span>
-      <span class="muted">DIGIYLYFE — Made in Sénégal 🦅</span>
-    </footer>
-  </div>
+.panel{
+  width:100%;
+  max-width:900px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+}
 
-  <!-- ✅ UN SEUL SCRIPT -->
-  <script type="module" src="./digiy-supa-chat.js"></script>
-</body>
-</html>
+.panel-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px;
+  border-bottom:1px solid var(--line);
+}
+
+.status{display:flex;gap:8px;align-items:center}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--muted);
+}
+.dot.ok{background:var(--ok)}
+.dot.bad{background:var(--bad)}
+
+.messages{
+  flex:1;
+  padding:12px;
+  overflow-y:auto;
+}
+
+.msg-row{margin-bottom:10px}
+.msg{
+  padding:10px 12px;
+  border-radius:14px;
+  max-width:70%;
+}
+.msg.client{
+  background:#02081a;
+  border:1px solid var(--line);
+}
+.msg.pro{
+  background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+  color:#111;
+  margin-left:auto;
+}
+
+.composer{
+  display:flex;
+  gap:8px;
+  padding:12px;
+  border-top:1px solid var(--line);
+}
+
+.input{
+  background:#02081a;
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:14px;
+}
+.input.grow{flex:1}
+
+.btn{
+  border-radius:14px;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  background:#02081a;
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+  color:#111;
+}
+
+.foot{
+  text-align:center;
+  padding:12px;
+  font-size:12px;
+  color:var(--muted);
+}
+</style>
+
