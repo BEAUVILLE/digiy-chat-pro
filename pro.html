@@ -1,80 +1,239 @@
-<!-- pro.html -->
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A0E1A" />
-  <title>DIGIY CHAT PRO</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
+// digiy-supa-chat.js
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-<body>
-  <div class="app">
-    <header class="top">
-      <a class="brand" href="https://digiylyfe.com" target="_blank" rel="noopener">
-        <span class="logo">∞</span>
-        <span class="titles">
-          <span class="t1">DIGIY CHAT PRO</span>
-          <span class="t2">Assistance & Clients • 0% commission</span>
-        </span>
-      </a>
+/* 🔐 SUPABASE */
+const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
-      <div class="right">
-        <div id="roomPill" class="pill">Room: <b>—</b></div>
-        <button id="btnCopyLink" class="btn ghost" type="button" title="Copier le lien de la room">🔗</button>
-        <button id="btnResetRoom" class="btn danger" type="button" title="Changer de room">♻️</button>
-      </div>
-    </header>
+const TABLE = "digiy_chat_messages";
+const LS_KEY = "digiy_chat_identity_v2";
 
-    <main class="main">
-      <section class="panel">
-        <div class="panel-top">
-          <div class="status">
-            <span id="connDot" class="dot"></span>
-            <span id="connText">Connexion…</span>
-          </div>
+/* DOM */
+const messagesList = document.getElementById("messagesList");
+const chatInput = document.getElementById("chatInput");
+const sendBtn = document.getElementById("sendDigiyBtn");
 
-          <div class="who">
-            <span class="tag">Mode</span>
-            <select id="modeSelect" class="select">
-              <option value="pro" selected>PRO</option>
-              <option value="client">CLIENT</option>
-            </select>
+const connDot = document.getElementById("connDot");
+const connText = document.getElementById("connText");
 
-            <span class="tag">Nom</span>
-            <input id="nameInput" class="input" placeholder="Ex: Astou Boutique" maxlength="40" />
-          </div>
-        </div>
+const modeSelect = document.getElementById("modeSelect");
+const nameInput = document.getElementById("nameInput");
 
-        <div id="messagesList" class="messages" aria-live="polite"></div>
+const roomPill = document.getElementById("roomPill");
+const btnCopyLink = document.getElementById("btnCopyLink");
+const btnResetRoom = document.getElementById("btnResetRoom");
 
-        <div class="composer">
-          <input id="chatInput" class="input grow" placeholder="Écris ton message…" autocomplete="off" />
-          <button id="sendDigiyBtn" class="btn primary" type="button">Envoyer →</button>
-        </div>
+/* URL params */
+const qs = new URLSearchParams(location.search);
+let CHAT_ID = (qs.get("chat") || "exemple-chat-1").trim();
+const ROOM_TOKEN = (qs.get("token") || "").trim();
 
-        <div class="hint">
-          Astuce : ajoute <code>?chat=resto-chez-baptiste</code> dans l’URL pour une room dédiée.
-        </div>
-      </section>
-    </main>
+/* Identity */
+function safeJson(s){ try { return JSON.parse(s); } catch { return null; } }
+function randomId(prefix="u_"){
+  return prefix + Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
 
-    <footer class="foot">
-      <a class="link" href="https://wa.me/221771342889" target="_blank" rel="noopener">WhatsApp</a>
-      <span class="sep">•</span>
-      <a class="link" href="https://beauville.github.io/digiy-hub/" target="_blank" rel="noopener">Retour HUB</a>
-      <span class="sep">•</span>
-      <span class="muted">DIGIYLYFE — Made in Sénégal 🦅</span>
-    </footer>
-  </div>
+const saved = safeJson(localStorage.getItem(LS_KEY)) || {};
+let sender_type = saved.sender_type || (qs.get("mode") || "pro");
+let sender_name = saved.sender_name || (qs.get("name") || "");
+let sender_id   = saved.sender_id   || randomId("u_");
 
-  <!-- ✅ UN SEUL SCRIPT -->
-  <script type="module" src="./digiy-supa-chat.js"></script>
-</body>
-</html>
-css
-Copier le code
+if(modeSelect) modeSelect.value = sender_type === "client" ? "client" : "pro";
+if(nameInput) nameInput.value = sender_name;
 
+/* Client Supabase + coffre-fort */
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false },
+  global: {
+    headers: {
+      "x-digiy-room-token": ROOM_TOKEN
+    }
+  }
+});
+
+let channel = null;
+
+/* UI helpers */
+function setConn(ok, text){
+  if(!connDot || !connText) return;
+  connDot.classList.remove("ok","bad");
+  connDot.classList.add(ok ? "ok" : "bad");
+  connText.textContent = text || (ok ? "OK" : "OFF");
+}
+
+function setRoomUI(){
+  if(roomPill){
+    const b = roomPill.querySelector("b");
+    if(b) b.textContent = CHAT_ID;
+    else roomPill.textContent = `Room: ${CHAT_ID}`;
+  }
+  document.title = `DIGIY CHAT PRO — ${CHAT_ID}`;
+}
+
+function scrollDown(){
+  if(!messagesList) return;
+  messagesList.scrollTop = messagesList.scrollHeight;
+}
+
+function saveIdentity(){
+  sender_type = modeSelect?.value === "client" ? "client" : "pro";
+  sender_name = (nameInput?.value || "").trim();
+  localStorage.setItem(LS_KEY, JSON.stringify({ sender_type, sender_name, sender_id }));
+}
+
+/* Render */
+function renderMessage(msg){
+  const row = document.createElement("div");
+  row.className = "msg-row " + (msg.sender_type === "pro" ? "pro" : "client");
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg " + (msg.sender_type === "pro" ? "pro" : "client");
+  bubble.textContent = (msg.text || "").toString();
+
+  const meta = document.createElement("div");
+  meta.className = "msg-meta";
+  const who = msg.sender_name || (msg.sender_type === "pro" ? "PRO" : "CLIENT");
+  const time = msg.created_at ? new Date(msg.created_at).toLocaleString("fr-FR") : "";
+  meta.textContent = time ? `${who} • ${time}` : who;
+
+  row.appendChild(bubble);
+  row.appendChild(meta);
+  messagesList.appendChild(row);
+  scrollDown();
+}
+
+/* Load + realtime */
+async function loadMessages(){
+  setConn(false, "Chargement…");
+  if(messagesList) messagesList.innerHTML = "";
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("chat_id", CHAT_ID)
+    .order("created_at", { ascending: true })
+    .limit(500);
+
+  if(error){
+    console.error("loadMessages error:", error);
+    setConn(false, "Erreur accès (token/RLS)");
+    if(messagesList){
+      messagesList.innerHTML =
+        `<div class="hint">⚠️ Lecture bloquée. Vérifie le token (URL) + RLS sur <code>${TABLE}</code>.</div>`;
+    }
+    return;
+  }
+
+  (data || []).forEach(renderMessage);
+  setConn(true, "Connecté");
+}
+
+function startRealtime(){
+  if(channel){
+    supabase.removeChannel(channel);
+    channel = null;
+  }
+
+  channel = supabase
+    .channel("room_" + CHAT_ID)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: TABLE },
+      (payload) => {
+        const msg = payload.new;
+        if(msg && msg.chat_id === CHAT_ID){
+          renderMessage(msg);
+        }
+      }
+    )
+    .subscribe((status) => {
+      if(status === "SUBSCRIBED"){
+        console.log(`Canal temps réel ${CHAT_ID} → SUBSCRIBED`);
+        setConn(true, "Temps réel actif");
+      }
+      if(status === "CLOSED"){
+        console.warn(`Canal temps réel ${CHAT_ID} → CLOSED`);
+      }
+    });
+}
+
+/* Send */
+async function sendMessage(){
+  const text = (chatInput?.value || "").trim();
+  if(!text) return;
+
+  saveIdentity();
+  if(sendBtn) sendBtn.disabled = true;
+
+  const { error } = await supabase
+    .from(TABLE)
+    .insert({
+      chat_id: CHAT_ID,
+      sender_id,
+      sender_type,
+      sender_name,
+      text
+    });
+
+  if(sendBtn) sendBtn.disabled = false;
+
+  if(error){
+    console.error("send error:", error);
+    alert("Envoi bloqué. Vérifie token + RLS + colonnes table.");
+    return;
+  }
+
+  chatInput.value = "";
+  chatInput.focus();
+}
+
+/* Buttons */
+sendBtn?.addEventListener("click", sendMessage);
+chatInput?.addEventListener("keydown", (e) => { if(e.key === "Enter") sendMessage(); });
+
+modeSelect?.addEventListener("change", saveIdentity);
+nameInput?.addEventListener("change", saveIdentity);
+
+btnCopyLink?.addEventListener("click", async () => {
+  saveIdentity();
+  const url = new URL(location.href);
+  url.searchParams.set("chat", CHAT_ID);
+  url.searchParams.set("mode", sender_type);
+  if(sender_name) url.searchParams.set("name", sender_name);
+  if(ROOM_TOKEN) url.searchParams.set("token", ROOM_TOKEN);
+
+  try{
+    await navigator.clipboard.writeText(url.toString());
+    alert("Lien copié ✅");
+  } catch {
+    prompt("Copie le lien :", url.toString());
+  }
+});
+
+btnResetRoom?.addEventListener("click", () => {
+  const next = prompt("Nouvelle room (chat_id) :", CHAT_ID);
+  if(!next) return;
+
+  CHAT_ID = next.trim();
+
+  const url = new URL(location.href);
+  url.searchParams.set("chat", CHAT_ID);
+  history.replaceState({}, "", url.toString());
+
+  setRoomUI();
+  loadMessages();
+  startRealtime();
+});
+
+/* BOOT */
+(function boot(){
+  console.log("🦅 DIGIY PRO CHAT — Supabase ready");
+  setRoomUI();
+  saveIdentity();
+  loadMessages();
+  startRealtime();
+})();
 
 
