@@ -1,76 +1,716 @@
-<!-- pro.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A0E1A" />
-  <title>DIGIY CHAT PRO</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta charset="utf-8">
+  <title>DIGIY PRO CHAT — Canal client WhatsApp & Appels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="DIGIY PRO CHAT — Centralisez vos demandes clients, basculez en 1 clic vers WhatsApp ou un appel.">
+  <meta name="theme-color" content="#020617">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#020617;
+      --bg-soft:#030712;
+      --card:#020617;
+      --card-soft:#030712;
+      --accent:#f97316;
+      --accent-soft:#fed7aa;
+      --accent-strong:#ea580c;
+      --accent-whatsapp:#22c55e;
+      --accent-call:#0ea5e9;
+      --ink:#f9fafb;
+      --ink-soft:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --danger:#ef4444;
+      --shadow-soft:0 24px 60px rgba(15,23,42,0.9);
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-pill:999px;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{font-size:16px;}
+
+    body{
+      min-height:100vh;
+      font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:radial-gradient(circle at top left,#1e293b 0,#020617 45%) fixed;
+      color:var(--ink);
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      padding:1.5rem;
+    }
+    @media (max-width:768px){ body{padding:0.75rem;} }
+
+    .app{
+      width:100%;
+      max-width:1200px;
+      background:radial-gradient(circle at top,#0b1220 0,#020617 55%);
+      border-radius:32px;
+      border:1px solid rgba(148,163,184,0.2);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+    .app::before{
+      content:'';
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 0 0,rgba(248,113,113,0.08),transparent 55%),
+        radial-gradient(circle at 100% 0,rgba(56,189,248,0.12),transparent 55%);
+      opacity:0.7;
+      pointer-events:none;
+    }
+
+    /* HEADER */
+    .header{
+      position:relative;
+      z-index:1;
+      padding:1.25rem 1.75rem;
+      border-bottom:1px solid rgba(148,163,184,0.25);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      background:rgba(2,6,23,0.75);
+      backdrop-filter:blur(14px);
+    }
+
+    .brand{display:flex;align-items:center;gap:0.9rem;}
+
+    .brand-logo{
+      width:44px;height:44px;border-radius:18px;
+      background:conic-gradient(from 160deg at 50% 50%,#f97316,#fb923c,#f97316,#facc15,#f97316);
+      display:flex;align-items:center;justify-content:center;
+      color:#0b1120;
+      font-family:'Outfit',sans-serif;
+      font-weight:900;
+      font-size:1.5rem;
+      box-shadow:0 16px 40px rgba(248,113,22,0.7);
+      position:relative;
+      overflow:hidden;
+    }
+    .brand-logo::after{
+      content:'';
+      position:absolute;inset:0;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.5),transparent 55%);
+      opacity:0.7;
+      mix-blend-mode:screen;
+    }
+
+    .brand-text-title{
+      font-family:'Outfit',sans-serif;
+      font-size:1.4rem;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      background:linear-gradient(135deg,#f97316,#fed7aa);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .brand-text-sub{
+      font-size:0.8rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.14em;
+      font-weight:600;
+    }
+
+    .header-right{display:flex;align-items:center;gap:0.75rem;}
+
+    .pill{
+      padding:0.4rem 0.9rem;
+      border-radius:var(--radius-pill);
+      border:1px solid rgba(148,163,184,0.5);
+      font-size:0.78rem;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--ink-soft);
+      display:flex;
+      align-items:center;
+      gap:0.35rem;
+      background:rgba(15,23,42,0.85);
+    }
+    .pill span.icon{font-size:0.9rem;}
+
+    .status-dot{
+      width:8px;height:8px;border-radius:999px;
+      background:var(--accent-whatsapp);
+      box-shadow:0 0 0 6px rgba(34,197,94,0.3);
+    }
+
+    @media (max-width:768px){
+      .header{flex-direction:column;align-items:flex-start;}
+      .header-right{width:100%;justify-content:space-between;}
+    }
+
+    /* LAYOUT */
+    .layout{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:320px minmax(0,1fr);
+      min-height:480px;
+    }
+    @media (max-width:900px){
+      .layout{grid-template-columns:1fr;}
+      .sidebar{display:none;}
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      border-right:1px solid rgba(30,64,175,0.35);
+      background:linear-gradient(to bottom,rgba(15,23,42,0.9),rgba(15,23,42,0.98));
+      padding:1rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.75rem;
+    }
+
+    .sidebar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;}
+
+    .sidebar-title{display:flex;flex-direction:column;gap:0.2rem;}
+    .sidebar-title span:first-child{font-size:0.9rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;}
+
+    .badge-counter{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:var(--radius-pill);
+      padding:0.25rem 0.6rem;
+      font-size:0.7rem;
+      background:rgba(37,99,235,0.1);
+      color:#93c5fd;
+      border:1px solid rgba(59,130,246,0.4);
+    }
+
+    .filter-chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.75rem;}
+    .chip{
+      padding:0.25rem 0.6rem;
+      border-radius:var(--radius-pill);
+      border:1px solid rgba(148,163,184,0.4);
+      font-size:0.74rem;
+      color:var(--muted);
+      cursor:pointer;
+    }
+    .chip-active{
+      background:rgba(248,113,22,0.13);
+      border-color:rgba(248,113,22,0.8);
+      color:#fed7aa;
+    }
+
+    .chat-list{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:0.4rem;
+      overflow-y:auto;
+      padding-right:0.15rem;
+    }
+
+    .chat-item{
+      display:flex;
+      gap:0.55rem;
+      padding:0.55rem 0.55rem;
+      border-radius:14px;
+      cursor:pointer;
+      border:1px solid transparent;
+      transition:all 0.18s ease;
+    }
+    .chat-item:hover{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.35);}
+    .chat-active{
+      background:linear-gradient(135deg,rgba(15,23,42,1),rgba(15,23,42,0.92));
+      border-color:rgba(248,113,22,0.7);
+      box-shadow:0 12px 30px rgba(15,23,42,0.9);
+    }
+
+    .chat-avatar{
+      width:32px;height:32px;border-radius:999px;
+      background:radial-gradient(circle,#1d4ed8,#38bdf8);
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.9rem;font-weight:700;
+    }
+
+    .chat-meta{flex:1;display:flex;flex-direction:column;gap:0.15rem;}
+    .chat-row-top{display:flex;justify-content:space-between;align-items:center;gap:0.3rem;font-size:0.78rem;}
+    .chat-name{font-weight:600;}
+    .chat-time{font-size:0.72rem;color:var(--muted);}
+    .chat-snippet{font-size:0.78rem;color:var(--muted);max-height:2.4em;overflow:hidden;text-overflow:ellipsis;}
+    .chat-tags{display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.2rem;}
+
+    .tag{
+      font-size:0.7rem;
+      padding:0.12rem 0.4rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      color:var(--muted);
+    }
+    .tag-new{border-color:rgba(248,113,22,0.8);color:#fed7aa;}
+    .tag-today{border-color:rgba(34,197,94,0.8);color:#bbf7d0;}
+    .tag-wapp{border-color:rgba(34,197,94,0.8);color:#4ade80;}
+
+    /* MAIN */
+    .main{
+      background:radial-gradient(circle at top,#020617,#000 70%);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .main-header{
+      padding:1rem 1.25rem;
+      border-bottom:1px solid rgba(30,64,175,0.45);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:1rem;
+    }
+
+    .thread-info{display:flex;flex-direction:column;gap:0.15rem;}
+    .thread-title{
+      display:flex;align-items:center;gap:0.4rem;
+      font-size:0.78rem;color:var(--muted);
+      text-transform:uppercase;letter-spacing:0.08em;
+    }
+    .thread-title .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:#22c55e;
+      box-shadow:0 0 0 4px rgba(34,197,94,0.35);
+    }
+    .thread-main{font-size:1rem;font-weight:600;}
+    .thread-meta{font-size:0.8rem;color:var(--muted);}
+
+    .thread-actions{display:flex;flex-direction:column;gap:0.4rem;}
+
+    .btn-sm{
+      display:inline-flex;align-items:center;gap:0.4rem;
+      font-size:0.78rem;border-radius:999px;padding:0.35rem 0.7rem;
+      border:none;text-decoration:none;cursor:pointer;
+    }
+    .btn-sm-whatsapp{
+      background:rgba(34,197,94,0.12);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,0.7);
+    }
+    .btn-sm-call{
+      background:rgba(56,189,248,0.12);
+      color:#bae6fd;
+      border:1px solid rgba(56,189,248,0.7);
+    }
+    @media (max-width:768px){
+      .main-header{flex-direction:column;}
+      .thread-actions{flex-direction:row;}
+    }
+
+    .messages{
+      flex:1;
+      padding:0.75rem 1.25rem 0.75rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
+      overflow-y:auto;
+    }
+
+    .msg-row{display:flex;margin-bottom:0.15rem;}
+    .msg-row.client{justify-content:flex-start;}
+    .msg-row.pro{justify-content:flex-end;}
+
+    .msg{
+      max-width:70%;
+      padding:0.6rem 0.85rem;
+      border-radius:16px;
+      font-size:0.86rem;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .msg.client{background:#02081a;border:1px solid rgba(148,163,184,0.45);}
+    .msg.pro{background:linear-gradient(135deg,#f97316,#ea580c);color:#111827;}
+
+    .msg-meta{font-size:0.7rem;color:var(--muted);margin-top:0.15rem;}
+    .msg-meta.right{text-align:right;}
+
+    /* INPUT BAR */
+    .input-bar{
+      padding:0.65rem 1.25rem 0.8rem;
+      border-top:1px solid rgba(30,64,175,0.45);
+      display:flex;
+      gap:0.6rem;
+      align-items:flex-end;
+      background:rgba(2,6,23,0.96);
+    }
+
+    .input-zone{flex:1;display:flex;flex-direction:column;gap:0.3rem;}
+
+    #chatInput{
+      width:100%;
+      min-height:44px;
+      max-height:120px;
+      resize:vertical;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.45);
+      background:#02081a;
+      color:var(--ink-soft);
+      padding:0.55rem 0.9rem;
+      font-size:0.84rem;
+      outline:none;
+    }
+    #chatInput::placeholder{color:var(--muted);}
+
+    .input-hint{font-size:0.7rem;color:var(--muted);}
+
+    .input-actions{display:flex;flex-direction:column;gap:0.3rem;}
+
+    .btn-cta-mini{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.25rem;
+      padding:0.35rem 0.8rem;
+      border-radius:999px;
+      font-size:0.78rem;
+      border:none;
+      cursor:pointer;
+      text-decoration:none;
+      font-weight:800;
+    }
+
+    .btn-cta-wa{
+      background:rgba(34,197,94,0.12);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,0.7);
+    }
+    .btn-cta-call{
+      background:rgba(56,189,248,0.12);
+      color:#bae6fd;
+      border:1px solid rgba(56,189,248,0.7);
+    }
+    .btn-send-digiy{
+      background:linear-gradient(135deg,#f97316,#facc15);
+      color:#111827;
+      border:none;
+    }
+  </style>
 </head>
 
 <body>
   <div class="app">
-    <header class="top">
-      <a class="brand" href="https://digiylyfe.com" target="_blank" rel="noopener">
-        <span class="logo">∞</span>
-        <span class="titles">
-          <span class="t1">DIGIY CHAT PRO</span>
-          <span class="t2">Assistance & Clients • 0% commission</span>
-        </span>
-      </a>
-
-      <div class="right">
-        <div id="roomPill" class="pill">Room: <b>—</b></div>
-        <button id="btnCopyLink" class="btn ghost" type="button" title="Copier le lien de la room">🔗</button>
-        <button id="btnResetRoom" class="btn danger" type="button" title="Changer de room">♻️</button>
+    <header class="header">
+      <div class="brand">
+        <div class="brand-logo">D</div>
+        <div>
+          <div class="brand-text-title">DIGIY PRO CHAT</div>
+          <div class="brand-text-sub">Canal client unifié • WhatsApp & appels</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="pill">
+          <span class="icon">⚡</span>
+          <span>Mode démo</span>
+        </div>
+        <div class="pill">
+          <span class="status-dot"></span>
+          <span>En ligne</span>
+        </div>
       </div>
     </header>
 
-    <main class="main">
-      <section class="panel">
-        <div class="panel-top">
-          <div class="status">
-            <span id="connDot" class="dot"></span>
-            <span id="connText">Connexion…</span>
-          </div>
-
-          <div class="who">
-            <span class="tag">Mode</span>
-            <select id="modeSelect" class="select">
-              <option value="pro" selected>PRO</option>
-              <option value="client">CLIENT</option>
-            </select>
-
-            <span class="tag">Nom</span>
-            <input id="nameInput" class="input" placeholder="Ex: Astou Boutique" maxlength="40" />
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">
+            <span>Demandes clients</span>
+            <span class="badge-counter">3 actifs</span>
           </div>
         </div>
 
-        <div id="messagesList" class="messages" aria-live="polite"></div>
-
-        <div class="composer">
-          <input id="chatInput" class="input grow" placeholder="Écris ton message…" autocomplete="off" />
-          <button id="sendDigiyBtn" class="btn primary" type="button">Envoyer →</button>
+        <div class="filter-chips">
+          <span class="chip chip-active">Toutes</span>
+          <span class="chip">WhatsApp</span>
+          <span class="chip">Appels</span>
+          <span class="chip">Nouveaux</span>
         </div>
 
-        <div class="hint">
-          Astuce : ajoute <code>?chat=resto-chez-baptiste</code> dans l’URL pour une room dédiée.
-        </div>
-      </section>
-    </main>
+        <div class="chat-list" id="chatList">
+          <div class="chat-item chat-active" data-chat-id="exemple-chat-1" data-label="Fama K. — Transfert AIBD → Saly">
+            <div class="chat-avatar">F</div>
+            <div class="chat-meta">
+              <div class="chat-row-top">
+                <div class="chat-name">Fama K. (Nouveau client)</div>
+                <div class="chat-time">10:30</div>
+              </div>
+              <div class="chat-snippet">“Bonjour, c’est pour un transfert AIBD → Saly demain 14h…”</div>
+              <div class="chat-tags">
+                <span class="tag tag-new">Nouveau</span>
+                <span class="tag tag-today">Aujourd'hui</span>
+              </div>
+            </div>
+          </div>
 
-    <footer class="foot">
-      <a class="link" href="https://wa.me/221771342889" target="_blank" rel="noopener">WhatsApp</a>
-      <span class="sep">•</span>
-      <a class="link" href="https://beauville.github.io/digiy-hub/" target="_blank" rel="noopener">Retour HUB</a>
-      <span class="sep">•</span>
-      <span class="muted">DIGIYLYFE — Made in Sénégal 🦅</span>
-    </footer>
+          <div class="chat-item" data-chat-id="exemple-chat-2" data-label="Modou F. — AIBD → Saly">
+            <div class="chat-avatar">M</div>
+            <div class="chat-meta">
+              <div class="chat-row-top">
+                <div class="chat-name">Modou F. (AIBD → Saly)</div>
+                <div class="chat-time">Hier</div>
+              </div>
+              <div class="chat-snippet">“OK pour 14h demain, je vous envoie le tarif et le lien de paiement…”</div>
+              <div class="chat-tags">
+                <span class="tag tag-wapp">WhatsApp</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-item" data-chat-id="exemple-chat-3" data-label="Aïsha N. — Retour hôtel">
+            <div class="chat-avatar">A</div>
+            <div class="chat-meta">
+              <div class="chat-row-top">
+                <div class="chat-name">Aïsha N. (Retour hôtel)</div>
+                <div class="chat-time">24/11</div>
+              </div>
+              <div class="chat-snippet">“Parfait, c’est booké merci beaucoup 🙏”</div>
+              <div class="chat-tags">
+                <span class="tag">Client fidèle</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="main-header">
+          <div class="thread-info">
+            <div class="thread-title">
+              <span class="dot"></span>
+              <span>Demande en cours</span>
+            </div>
+            <div class="thread-main" id="threadMain">Fama K. — Transfert AIBD → Saly</div>
+            <div class="thread-meta" id="threadMeta">Flux en temps réel DIGIY + WhatsApp (Supabase, messages 24h)</div>
+          </div>
+
+          <div class="thread-actions">
+            <a href="https://wa.me/221771342889" target="_blank" class="btn-sm btn-sm-whatsapp">
+              <span>💬</span><span>Ouvrir dans WhatsApp</span>
+            </a>
+            <a href="tel:+221771342889" class="btn-sm btn-sm-call">
+              <span>📞</span><span>Appeler le client</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="messages" id="messagesList"></div>
+
+        <div class="input-bar">
+          <div class="input-zone">
+            <textarea id="chatInput" placeholder="Écrire une note ou une réponse interne DIGIY…"></textarea>
+            <div class="input-hint">
+              Notes internes DIGIY (messages visibles 24h max).  
+              Pour parler au client : WhatsApp ou appel direct.
+            </div>
+          </div>
+          <div class="input-actions">
+            <button id="sendDigiyBtn" type="button" class="btn-cta-mini btn-send-digiy">💾 DIGIY</button>
+            <a href="https://wa.me/221771342889" target="_blank" class="btn-cta-mini btn-cta-wa">💬 WhatsApp</a>
+            <a href="tel:+221771342889" class="btn-cta-mini btn-cta-call">📞 Appel</a>
+          </div>
+        </div>
+      </main>
+    </div>
   </div>
 
-  <!-- ✅ UN SEUL SCRIPT -->
-  <script type="module" src="./digiy-supa-chat.js"></script>
+  <!-- ✅ UN SEUL SDK (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    console.log("🦅 DIGIY PRO CHAT — Supabase ready");
+
+    // 🔐 SUPABASE CONFIG (TES VALEURS)
+    const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
+    const SUPABASE_PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+
+    // IDs DIGIY (démo comme à l’origine)
+    const PRO_ID = "PRO_UID_001";
+    const USER_ID = "USER_UID_001";
+
+    const messagesListEl = document.getElementById("messagesList");
+    const chatInputEl    = document.getElementById("chatInput");
+    const sendDigiyBtn   = document.getElementById("sendDigiyBtn");
+    const chatListEl     = document.getElementById("chatList");
+    const threadMainEl   = document.getElementById("threadMain");
+
+    let currentChatId = "exemple-chat-1";
+    let currentChannel = null;
+
+    function formatTime(ts){
+      if (!ts) return "";
+      const d = new Date(ts);
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mm = String(d.getMinutes()).padStart(2,"0");
+      return hh + ":" + mm;
+    }
+
+    function clearMessages(){
+      while (messagesListEl.firstChild) messagesListEl.removeChild(messagesListEl.firstChild);
+    }
+
+    function isExpired(msg){
+      if (!msg.expires_at) return false;
+      return new Date(msg.expires_at) < new Date();
+    }
+
+    function renderMessage(msg){
+      if (!msg || isExpired(msg)) return;
+
+      const senderType = msg.sender_type || msg.senderType || msg.from || "client";
+      const text       = msg.text || "";
+      const ts         = msg.timestamp || msg.created_at || null;
+      const isClient = senderType === "user" || senderType === "client";
+
+      const row = document.createElement("div");
+      row.className = "msg-row " + (isClient ? "client" : "pro");
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg " + (isClient ? "client" : "pro");
+      bubble.textContent = text;
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta" + (isClient ? "" : " right");
+      meta.textContent = (isClient ? "Client" : "Vous") + (ts ? " • " + formatTime(ts) : "");
+
+      const wrap = document.createElement("div");
+      wrap.appendChild(bubble);
+      wrap.appendChild(meta);
+
+      row.appendChild(wrap);
+      messagesListEl.appendChild(row);
+      messagesListEl.scrollTop = messagesListEl.scrollHeight;
+    }
+
+    // 🔁 Charger l'historique depuis Supabase (messages non expirés)
+    async function loadMessagesForChat(chatId){
+      clearMessages();
+      currentChatId = chatId;
+
+      const nowIso = new Date().toISOString();
+
+      const { data, error } = await supabaseClient
+        .from("digiy_chat_messages")
+        .select("*")
+        .eq("chat_id", chatId)
+        .gte("expires_at", nowIso)
+        .order("timestamp", { ascending: true });
+
+      if (error) {
+        console.error("Erreur Supabase (load):", error);
+        alert("Erreur chargement DIGIY CHAT (voir console).");
+        return;
+      }
+
+      (data || []).forEach(renderMessage);
+    }
+
+    // 👂 Temps réel pour le chat courant
+    function subscribeToChat(chatId){
+      if (currentChannel) {
+        supabaseClient.removeChannel(currentChannel);
+        currentChannel = null;
+      }
+
+      currentChannel = supabaseClient
+        .channel("digiy-chat-" + chatId)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "digiy_chat_messages",
+            filter: "chat_id=eq." + chatId
+          },
+          (payload) => renderMessage(payload.new)
+        )
+        .subscribe((status) => console.log("Canal temps réel", chatId, "→", status));
+    }
+
+    async function switchChat(chatId){
+      await loadMessagesForChat(chatId);
+      subscribeToChat(chatId);
+    }
+
+    function handleChatSelection(e){
+      const item = e.target.closest(".chat-item");
+      if (!item) return;
+
+      const chatId = item.getAttribute("data-chat-id");
+      const label  = item.getAttribute("data-label") || "Conversation";
+
+      document.querySelectorAll(".chat-item").forEach(i => i.classList.toggle("chat-active", i === item));
+      if (threadMainEl) threadMainEl.textContent = label;
+
+      switchChat(chatId);
+    }
+
+    if (chatListEl) chatListEl.addEventListener("click", handleChatSelection);
+
+    // ✉️ Envoi
+    async function sendDigiyMessage(){
+      const text = (chatInputEl.value || "").trim();
+      if (!text) return;
+
+      sendDigiyBtn.disabled = true;
+
+      try{
+        const { error } = await supabaseClient
+          .from("digiy_chat_messages")
+          .insert({
+            chat_id: currentChatId,
+            sender_id: PRO_ID,
+            sender_type: "pro",
+            text,
+            timestamp: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error("Erreur Supabase (insert):", error);
+          alert("Erreur DIGIY CHAT : " + (error.message || "voir console"));
+          sendDigiyBtn.disabled = false;
+          return;
+        }
+
+        chatInputEl.value = "";
+        chatInputEl.focus();
+      } catch(err){
+        console.error("Erreur inattendue:", err);
+        alert("Erreur DIGIY CHAT (voir console).");
+      } finally {
+        sendDigiyBtn.disabled = false;
+      }
+    }
+
+    if (sendDigiyBtn) sendDigiyBtn.addEventListener("click", sendDigiyMessage);
+
+    if (chatInputEl) {
+      chatInputEl.addEventListener("keydown", (e)=>{
+        if (e.key === "Enter" && !e.shiftKey){
+          e.preventDefault();
+          sendDigiyMessage();
+        }
+      });
+    }
+
+    // 🚀 Init
+    switchChat(currentChatId);
+  </script>
 </body>
 </html>
+
 
